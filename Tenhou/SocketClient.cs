@@ -35,7 +35,7 @@ namespace Tenhou
         {
             byte[] data = System.Text.Encoding.ASCII.GetBytes(message + "\0");
             stream.Write(data, 0, data.Length);
-            //Console.WriteLine("Send: {0}", message);
+            Console.WriteLine("Send: {0}", message);
         }
         public string Receive()
         {
@@ -44,7 +44,7 @@ namespace Tenhou
             string responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
             if (!string.IsNullOrEmpty(responseData))
             {
-                //Console.WriteLine("Receive: {0}", responseData);
+                Console.WriteLine("Receive: {0}", responseData);
             }
             return responseData;
         }

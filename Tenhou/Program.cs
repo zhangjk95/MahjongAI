@@ -10,23 +10,48 @@ namespace Tenhou
 {
     class Program
     {
-        static TenhouClient client = new TenhouClient("v1.0");
+        static TenhouClient client;
+        static Monitor monitor;
+        static Controller controller;
         static AutoResetEvent gameEnd = new AutoResetEvent(false);
+
+        static void Init(string programPath)
+        {
+            client = new TenhouClient("NoName"); //ID073C5834-E2RTTUYN
+
+            client.OnLogin += () =>
+            {
+                client.Join(GameType.North);
+                client.Join(GameType.North_fast);
+                client.Join(GameType.East);
+                client.Join(GameType.East_fast);
+            };
+            client.OnGameEnd += () => { gameEnd.Set(); };
+            client.OnClose += () => { gameEnd.Set(); };
+
+            monitor = new Monitor(client);
+            monitor.Start();
+
+            controller = new Controller(client, programPath);
+            controller.Start();
+
+            client.Login();
+        }
 
         static void Main(string[] args)
         {
-            //client.Join(GameType.North);
-            client.Join(GameType.East_fast);
-            client.OnGameEnd += () => { gameEnd.Set(); };
+            while (true)
+            {
+                Init(args[0]);
 
-            Monitor monitor = new Monitor(client);
-            monitor.Start();
+                gameEnd.WaitOne();
+                client.Close();
 
-            Controller controller = new Controller(client, args[0]);
-            controller.Start();
-
-            gameEnd.WaitOne();
-            client.Close();
+                if (Console.ReadLine() == "q")
+                {
+                    break;
+                }
+            }
         }
     }
 }

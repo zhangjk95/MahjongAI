@@ -33,9 +33,15 @@ namespace Tenhou
             client.OnDiscard += OnDiscard;
             client.OnGameStart += OnGameStart;
             client.OnGameEnd += OnGameEnd;
+            client.OnLogin += OnLogin;
             client.OnClose += OnClose;
             client.OnUnknownEvent += OnUnknownEvent;
             isRunning = true;
+        }
+
+        void OnLogin()
+        {
+            Console.WriteLine("Login");
         }
 
         public void Stop()
@@ -59,7 +65,7 @@ namespace Tenhou
         private void OnDraw(Tile tile)
         {
             Console.WriteLine("draw {0}", tile.Name);
-            Console.WriteLine(client.gameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
+            Console.WriteLine(client.GameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
         }
 
         private void OnWait(Tile tile)
@@ -72,18 +78,25 @@ namespace Tenhou
             if (player.num == 0)
             {
                 Console.WriteLine("discard {0}", tile.Name);
-                Console.WriteLine(client.gameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
+                Console.WriteLine(client.GameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
             }
         }
 
-        private void OnGameStart()
+        private void OnGameStart(bool continued)
         {
-            Console.WriteLine("Game Started.");
+            if (!continued)
+            {
+                Console.WriteLine("Game started.");
+            }
+            else
+            {
+                Console.WriteLine("Game continued.");
+            }
         }
 
         private void OnGameEnd()
         {
-            Console.WriteLine("Game Ended.");
+            Console.WriteLine("Game ended.");
         }
 
         private void OnUnknownEvent(string str)

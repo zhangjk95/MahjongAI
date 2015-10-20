@@ -38,10 +38,7 @@ namespace Tenhou
 
         ~Controller()
         {
-            if (isRunning)
-            {
-                Stop();
-            }
+            Stop();
         }
 
         public void Start()
@@ -60,14 +57,17 @@ namespace Tenhou
 
         public void Stop()
         {
-            client.OnDraw -= OnDraw;
-            client.OnWait -= OnWait;
-            client.OnClose -= OnClose;
+            if (isRunning)
+            {
+                client.OnDraw -= OnDraw;
+                client.OnWait -= OnWait;
+                client.OnClose -= OnClose;
 
-            process.Kill();
-            process.OutputDataReceived -= process_OutputDataReceived;
+                process.Kill();
+                process.OutputDataReceived -= process_OutputDataReceived;
 
-            isRunning = false;
+                isRunning = false;
+            }
         }
 
         void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -105,13 +105,13 @@ namespace Tenhou
             switch (cmd[0])
             {
                 case "hand":
-                    Send(client.gameData.hand.tile.ToString(" ", (tile) => tile.Name));
+                    Send(client.GameData.hand.tile.ToString(" ", (tile) => tile.Name));
                     break;
                 case "reached":
-                    Send(client.gameData.player[int.Parse(cmd[1])].reached.ToString());
+                    Send(client.GameData.player[int.Parse(cmd[1])].reached.ToString());
                     break;
                 case "graveyard":
-                    IEnumerable<Tile> tiles = client.gameData.player[int.Parse(cmd[1])].graveyard.tile;
+                    IEnumerable<Tile> tiles = client.GameData.player[int.Parse(cmd[1])].graveyard.tile;
                     if (cmd.Length > 2 && cmd[2] == "1")
                     {
                         tiles = tiles.Where((tile) => !tile.IsTakenAway);
@@ -119,19 +119,19 @@ namespace Tenhou
                     Send(tiles.ToString(" ", (tile) => tile.Name));
                     break;
                 case "dora":
-                    Send(client.gameData.dora.tile.ToString(" ", (tile) => tile.Name));
+                    Send(client.GameData.dora.tile.ToString(" ", (tile) => tile.Name));
                     break;
                 case "fuuro":
-                    Send(client.gameData.player[int.Parse(cmd[1])].fuuro.tile.Select((group) => group.ToString(" ", (tile) => tile.Name)).ToString(" "));
+                    Send(client.GameData.player[int.Parse(cmd[1])].fuuro.tile.Select((group) => group.ToString(" ", (tile) => tile.Name)).ToString(" "));
                     break;
                 case "discard":
-                    client.Discard(client.gameData.hand.tile.First((tile) => tile.Name == cmd[1]));
+                    client.Discard(client.GameData.hand.tile.First((tile) => tile.Name == cmd[1]));
                     break;
                 case "tsumokiri":
-                    client.Discard(client.gameData.lastTile);
+                    client.Discard(client.GameData.lastTile);
                     break;
                 case "reach":
-                    client.Reach(client.gameData.hand.tile.First((tile) => tile.Name == cmd[1]));
+                    client.Reach(client.GameData.hand.tile.First((tile) => tile.Name == cmd[1]));
                     break;
                 case "pass":
                     client.Pass();
