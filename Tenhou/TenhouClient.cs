@@ -32,10 +32,10 @@ namespace Tenhou
         private string username;
         private int lobby;
 
-        public TenhouClient(string username, int lobby = 0)
+        public TenhouClient(string username)
         {
             this.username = username;
-            this.lobby = lobby;
+            this.lobby = 0;
         }
 
         ~TenhouClient()
