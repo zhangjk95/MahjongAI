@@ -202,6 +202,7 @@ namespace Tenhou
             {
                 client.Send("<GOK />");
                 NextReady();
+                GameData = new GameData();
             }
             else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
             {
@@ -226,7 +227,6 @@ namespace Tenhou
             {
                 string logID = reader["log"];
                 SaveTenhouLog(logID);
-                GameData = new GameData();
                 if (OnGameStart != null)
                 {
                     OnGameStart(false);
@@ -240,7 +240,7 @@ namespace Tenhou
                     OnGameStart(true);
                 }
             }
-            else if (reader.Name == "INIT")
+            else if (reader.Name == "INIT" || reader.Name == "REINIT")
             {
                 HandleInit(reader["seed"], reader["ten"], reader["oya"], reader["hai"]);
                 if (OnUnknownEvent != null)

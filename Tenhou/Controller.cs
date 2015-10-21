@@ -74,7 +74,7 @@ namespace Tenhou
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                //Console.WriteLine("Program output: {0}", e.Data);
+                Trace.TraceInformation("Program output: {0}", e.Data);
                 HandleCommand(e.Data.Split());
             }
         }
@@ -82,7 +82,7 @@ namespace Tenhou
         void Send(string message)
         {
             process.StandardInput.WriteLine(message);
-            //Console.WriteLine("Program input: {0}", message);
+            Trace.TraceInformation("Program input: {0}", message);
         }
 
         private void OnClose()

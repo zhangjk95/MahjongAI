@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace Tenhou
 {
@@ -35,7 +36,7 @@ namespace Tenhou
         {
             byte[] data = System.Text.Encoding.ASCII.GetBytes(message + "\0");
             stream.Write(data, 0, data.Length);
-            Console.WriteLine("Send: {0}", message);
+            Trace.TraceInformation("Send: {0}", message);
         }
         public string Receive()
         {
@@ -44,7 +45,7 @@ namespace Tenhou
             string responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
             if (!string.IsNullOrEmpty(responseData))
             {
-                Console.WriteLine("Receive: {0}", responseData);
+                Trace.TraceInformation("Receive: {0}", responseData);
             }
             return responseData;
         }
