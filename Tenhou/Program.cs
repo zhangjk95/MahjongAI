@@ -16,14 +16,17 @@ namespace Tenhou
         static Monitor monitor;
         static Controller controller;
         static AutoResetEvent gameEnd = new AutoResetEvent(false);
+        static bool running = true;
 
         static void Init(string programPath)
         {
-            client = new TenhouClient("ID073C5834-E2RTTUYN"); //ID073C5834-E2RTTUYN
+            client = new TenhouClient("aixile");
+            
             gameEnd.Reset();
 
             client.OnLogin += () =>
             {
+                //client.EnterLobby(0);
                 client.Join(GameType.North);
                 client.Join(GameType.North_fast);
                 client.Join(GameType.East);
@@ -41,6 +44,22 @@ namespace Tenhou
             client.Login();
         }
 
+        static void CheckKeyPress()
+        {
+            if (Console.KeyAvailable)
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.Q:
+                        running = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
             //Trace.Listeners.Add(new ConsoleTraceListener());
@@ -48,26 +67,13 @@ namespace Tenhou
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
 
-            bool running = true;
+            
             while (running)
             {
                 Init(args[0]);
-
                 gameEnd.WaitOne();
                 client.Close();
-
-                if (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    switch (key.Key)
-                    {
-                        case ConsoleKey.Q:
-                            running = false;
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                CheckKeyPress();
             }
         }
     }

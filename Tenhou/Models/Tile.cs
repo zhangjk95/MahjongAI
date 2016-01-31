@@ -48,6 +48,11 @@ namespace Tenhou.Models
             return num.ToString();
         }
 
+        public int CompareTo(Tile other)
+        {
+            return this.num - other.num;
+        }
+
         Dictionary<int, string> map = new Dictionary<int, string>() {
             {0, "1m"}, {1, "1m"}, {2, "1m"}, {3, "1m"}, 
             {4, "2m"}, {5, "2m"}, {6, "2m"}, {7, "2m"}, 
@@ -84,10 +89,5 @@ namespace Tenhou.Models
             {128, "6z"}, {129, "6z"}, {130, "6z"}, {131, "6z"}, 
             {132, "7z"}, {133, "7z"}, {134, "7z"}, {135, "7z"}
         };
-
-        public int CompareTo(Tile other)
-        {
-            return this.num - other.num;
-        }
     }
 }

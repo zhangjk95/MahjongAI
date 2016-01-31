@@ -59,14 +59,18 @@ namespace Tenhou
         {
             if (isRunning)
             {
-                client.OnDraw -= OnDraw;
-                client.OnWait -= OnWait;
-                client.OnClose -= OnClose;
+                try
+                {
+                    client.OnDraw -= OnDraw;
+                    client.OnWait -= OnWait;
+                    client.OnClose -= OnClose;
 
-                process.Kill();
-                process.OutputDataReceived -= process_OutputDataReceived;
+                    process.Kill();
+                    process.OutputDataReceived -= process_OutputDataReceived;
 
-                isRunning = false;
+                    isRunning = false;
+                }
+                catch { }
             }
         }
 
@@ -95,20 +99,31 @@ namespace Tenhou
             Send(string.Format("draw {0}", tile.Name));
         }
 
-        private void OnWait(Tile tile)
+        private void OnWait(Tile tile, int fromPlayer)
         {
-            Send(string.Format("wait {0}", tile.Name));
+            Send(string.Format("wait {0} {1}", tile.Name, fromPlayer));
         }
 
         private void HandleCommand(string[] cmd)
         {
+            var handTiles = client.GameData.hand.tile;
             switch (cmd[0])
             {
                 case "hand":
-                    Send(client.GameData.hand.tile.ToString(" ", (tile) => tile.Name));
+                    Send(handTiles.ToString(" ", (tile) => tile.Name));
                     break;
                 case "reached":
                     Send(client.GameData.player[int.Parse(cmd[1])].reached.ToString());
+                    break;
+                case "direction":
+                    if (cmd[1] == "0")
+                    {
+                        Send(client.GameData.direction);
+                    }
+                    else
+                    {
+                        Send(client.GameData.player[int.Parse(cmd[2])].direction);
+                    }
                     break;
                 case "graveyard":
                     IEnumerable<Tile> tiles = client.GameData.player[int.Parse(cmd[1])].graveyard.tile;
@@ -124,23 +139,50 @@ namespace Tenhou
                 case "fuuro":
                     Send(client.GameData.player[int.Parse(cmd[1])].fuuro.tile.Select((group) => group.ToString(" ", (tile) => tile.Name)).ToString(" "));
                     break;
+                case "fuurosuu":
+                    Send(client.GameData.player[int.Parse(cmd[1])].fuuro.tile.Count.ToString());
+                    break;
                 case "discard":
-                    client.Discard(client.GameData.hand.tile.First((tile) => tile.Name == cmd[1]));
+                    client.Discard(handTiles.First((tile) => tile.Name == cmd[1]));
                     break;
                 case "tsumokiri":
                     client.Discard(client.GameData.lastTile);
                     break;
                 case "reach":
-                    client.Reach(client.GameData.hand.tile.First((tile) => tile.Name == cmd[1]));
+                    client.Reach(handTiles.First((tile) => tile.Name == cmd[1]));
                     break;
                 case "pass":
                     client.Pass();
+                    break;
+                case "pon":
+                    Tile tile0 = handTiles.First((tile) => tile.Name == cmd[1]);
+                    handTiles.Remove(tile0);
+                    Tile tile1 = handTiles.First((tile) => tile.Name == cmd[2]);
+                    client.Pon(tile0, tile1);
+                    break;
+                case "minkan":
+                    client.Minkan();
+                    break;
+                case "chii":
+                    client.Chii(handTiles.First((tile) => tile.Name == cmd[1]), handTiles.First((tile) => tile.Name == cmd[2]));
+                    break;
+                case "ankan":
+                    client.Ankan(handTiles.First((tile) => tile.Name == cmd[1]));
+                    break;
+                case "chakan":
+                    client.Chakan(handTiles.First((tile) => tile.Name == cmd[1]));
                     break;
                 case "ron":
                     client.Ron();
                     break;
                 case "tsumo":
                     client.Tsumo();
+                    break;
+                case "ryuukyoku":
+                    client.Ryuukyoku();
+                    break;
+                case "nuku":
+                    client.Nuku();
                     break;
             }
         }

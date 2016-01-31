@@ -68,9 +68,9 @@ namespace Tenhou
             Console.WriteLine(client.GameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
         }
 
-        private void OnWait(Tile tile)
+        private void OnWait(Tile tile, int fromPlayer)
         {
-            Console.WriteLine("wait {0}", tile.Name);
+            Console.WriteLine("wait {0} from {1}", tile.Name, fromPlayer);
         }
 
         private void OnDiscard(Player player, Tile tile)

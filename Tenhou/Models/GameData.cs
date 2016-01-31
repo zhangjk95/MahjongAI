@@ -11,6 +11,7 @@ namespace Tenhou.Models
         public Hand hand = new Hand();
         public Dora dora = new Dora();
         public Player[] player = new Player[4];
+        public string direction;
         public Tile lastTile;
 
         public GameData()

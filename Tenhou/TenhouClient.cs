@@ -17,7 +17,7 @@ namespace Tenhou
         const int port = 10080;
 
         public event Action<Tile> OnDraw;
-        public event Action<Tile> OnWait;
+        public event Action<Tile, int> OnWait;
         public event Action<Player, Tile> OnDiscard;
         public event Action OnLogin;
         public event Action OnClose;
@@ -127,6 +127,31 @@ namespace Tenhou
             GameData.hand.tile.Remove(tile);
         }
 
+        public void Pon(Tile tile0, Tile tile1)
+        {
+            client.Send(string.Format("<N type=\"1\" hai0=\"{0}\" hai1=\"{1}\" />", tile0, tile1));
+        }
+
+        public void Minkan()
+        {
+            client.Send("<N type=\"2\" />");
+        }
+
+        public void Chii(Tile tile0, Tile tile1)
+        {
+            client.Send(string.Format("<N type=\"3\" hai0=\"{0}\" hai1=\"{1}\" />", tile0, tile1));
+        }
+
+        public void Ankan(Tile tile)
+        {
+            client.Send(string.Format("<N type=\"4\" hai=\"{0}\" />", tile));
+        }
+
+        public void Chakan(Tile tile)
+        {
+            client.Send(string.Format("<N type=\"5\" hai=\"{0}\" />", tile));
+        }
+
         public void Ron()
         {
             client.Send("<N type=\"6\" />");
@@ -140,6 +165,11 @@ namespace Tenhou
         public void Ryuukyoku()
         {
             client.Send("<N type=\"9\" />");
+        }
+
+        public void Nuku()
+        {
+            client.Send("<N type=\"10\" />");
         }
 
         public void Reach(Tile tile)
@@ -226,7 +256,8 @@ namespace Tenhou
             else if (reader.Name == "TAIKYOKU")
             {
                 string logID = reader["log"];
-                SaveTenhouLog(logID);
+                int oya = int.Parse(reader["oya"]);
+                SaveTenhouLog(logID, oya);
                 if (OnGameStart != null)
                 {
                     OnGameStart(false);
@@ -272,7 +303,7 @@ namespace Tenhou
                 {
                     if (OnWait != null)
                     {
-                        OnWait(tile);
+                        OnWait(tile, player.num);
                     }
                 }
             }
@@ -295,11 +326,19 @@ namespace Tenhou
                     if (num != -1)
                     {
                         tiles.Add(new Tile(num));
+                        if (GameData.lastTile != null && GameData.lastTile.Num == num)
+                        {
+                            GameData.lastTile.IsTakenAway = true;
+                        }
                     }
                 }
 
                 player.fuuro.tile.Add(tiles);
-                GameData.lastTile.IsTakenAway = true;
+
+                if (player.num == 0)
+                {
+                    GameData.hand.tile.RemoveWhere((tile) => tiles.Exists((_tile) => tile.Num == _tile.Num));
+                }
 
                 if (OnUnknownEvent != null)
                 {
@@ -319,6 +358,19 @@ namespace Tenhou
 
         private void HandleInit(string seed, string ten, string oya, string hai)
         {
+            switch (int.Parse(new Regex(@"^(\d+)").Match(seed).Groups[1].Value))
+            {
+                case 0: case 1: case 2: case 3:
+                    GameData.direction = "E";
+                    break;
+                case 4: case 5: case 6: case 7:
+                    GameData.direction = "S";
+                    break;
+                case 8: case 9: case 10: case 11:
+                    GameData.direction = "W";
+                    break;
+            }
+
             GameData.dora.tile.Clear();
             int dora = int.Parse(new Regex(@"(\d+)$").Match(seed).Groups[1].Value);
             GameData.dora.tile.Add(new Tile(dora));
@@ -333,10 +385,10 @@ namespace Tenhou
             }
 
             int oyaNum = int.Parse(oya);
-            GameData.player[oyaNum].position = "E";
-            GameData.player[(oyaNum + 1) % 4].position = "S";
-            GameData.player[(oyaNum + 2) % 4].position = "W";
-            GameData.player[(oyaNum + 3) % 4].position = "N";
+            GameData.player[oyaNum].direction = "E";
+            GameData.player[(oyaNum + 1) % 4].direction = "S";
+            GameData.player[(oyaNum + 2) % 4].direction = "W";
+            GameData.player[(oyaNum + 3) % 4].direction = "N";
 
             GameData.hand.tile.Clear();
             MatchCollection haiCollection = new Regex(@"\d+").Matches(hai);
@@ -363,10 +415,10 @@ namespace Tenhou
             }
         }
 
-        private void SaveTenhouLog(string logID)
+        private void SaveTenhouLog(string logID, int oya)
         {
             StreamWriter writer = new StreamWriter("TenhouLog.txt", true);
-            writer.WriteLine("http://tenhou.net/0/?log=" + logID);
+            writer.WriteLine("http://tenhou.net/0/?log={0} oya:{1}", logID, oya);
             writer.Close();
         }
 

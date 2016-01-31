@@ -11,7 +11,7 @@ namespace Tenhou.Models
         public int num;
         public string name;
         public int level;
-        public string position;
+        public string direction;
         public int point;
         public bool reached;
         public Graveyard graveyard = new Graveyard();
