@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace Tenhou.Models
 {
-    class Fuuro
+    class Fuuro: List<List<Tile>>
     {
-        public List<List<Tile>> tile = new List<List<Tile>>();
+        public List<Tile> Tiles
+        {
+            get
+            {
+                return this.SelectMany(group => group).ToList();
+            }
+        }
     }
 }

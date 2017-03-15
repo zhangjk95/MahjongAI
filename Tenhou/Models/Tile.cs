@@ -8,14 +8,14 @@ namespace Tenhou.Models
 {
     class Tile: IComparable<Tile>
     {
-        private int num;
+        private int id;
         private bool isTakenAway;
 
-        public int Num
+        public int Id
         {
             get
             {
-                return num;
+                return id;
             }
         }
 
@@ -35,22 +35,54 @@ namespace Tenhou.Models
         {
             get
             {
-                return map[num];
+                return map[id];
             }
         }
 
-        public Tile(int num)
+        public string GeneralName
         {
-            this.num = num;
+            get
+            {
+                return map[id].Substring(0, 2);
+            }
+        }
+
+        public int Number
+        {
+            get
+            {
+                return int.Parse(map[id].Substring(0, 1));
+            }
+        }
+
+        public string Type
+        {
+            get
+            {
+                return map[id].Substring(1, 1);
+            }
+        }
+
+        public bool isRedDora
+        {
+            get
+            {
+                return map[id].Length > 2;
+            }
+        }
+
+        public Tile(int id)
+        {
+            this.id = id;
         }
 
         override public string ToString() {
-            return num.ToString();
+            return id.ToString();
         }
 
         public int CompareTo(Tile other)
         {
-            return this.num - other.num;
+            return this.id - other.id;
         }
 
         Dictionary<int, string> map = new Dictionary<int, string>() {

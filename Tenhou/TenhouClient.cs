@@ -13,11 +13,11 @@ namespace Tenhou
 {
     class TenhouClient
     {
-        const string server = "133.242.10.78";
-        const int port = 10080;
+        private const string server = "133.242.10.78";
+        private const int port = 10080;
 
         public event Action<Tile> OnDraw;
-        public event Action<Tile, int> OnWait;
+        public event Action<Tile, Player> OnWait;
         public event Action<Player, Tile> OnDiscard;
         public event Action OnLogin;
         public event Action OnClose;
@@ -25,8 +25,9 @@ namespace Tenhou
         public event Action OnGameEnd;
         public event Action<string> OnUnknownEvent;
 
-        public GameData GameData;
-        public bool Connected;
+        public GameData gameData;
+        public Player player;
+        public bool connected;
 
         private SocketClient client = new SocketClient(server, port);
         private string username;
@@ -45,14 +46,14 @@ namespace Tenhou
 
         public void Close()
         {
-            if (Connected)
+            if (connected)
             {
                 if (OnClose != null)
                 {
                     OnClose();
                 }
                 client.Close();
-                Connected = false;
+                connected = false;
             }
         }
 
@@ -76,7 +77,7 @@ namespace Tenhou
 
             new Task(StartRecv).Start();
             new Task(HeartBeat).Start();
-            Connected = true;
+            connected = true;
         }
 
         public void Join(GameType type)
@@ -124,7 +125,7 @@ namespace Tenhou
         public void Discard(Tile tile)
         {
             client.Send(string.Format("<D p=\"{0}\" />", tile));
-            GameData.hand.tile.Remove(tile);
+            player.hand.Remove(tile);
         }
 
         public void Pon(Tile tile0, Tile tile1)
@@ -175,7 +176,7 @@ namespace Tenhou
         public void Reach(Tile tile)
         {
             client.Send("<REACH hai=\"" + tile.ToString() + "\" />");
-            GameData.player[0].reached = true;
+            player.reached = true;
         }
 
         public void StartSend() {
@@ -232,7 +233,8 @@ namespace Tenhou
             {
                 client.Send("<GOK />");
                 NextReady();
-                GameData = new GameData();
+                gameData = new GameData();
+                player = gameData.player;
             }
             else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
             {
@@ -265,7 +267,7 @@ namespace Tenhou
             }
             else if (reader.Name == "SAIKAI")
             {
-                GameData = new GameData();
+                gameData = new GameData();
                 if (OnGameStart != null)
                 {
                     OnGameStart(true);
@@ -282,8 +284,8 @@ namespace Tenhou
             else if ((match = new Regex(@"T(\d+)").Match(reader.Name)).Success)
             {
                 Tile tile = new Tile(int.Parse(match.Groups[1].Value));
-                GameData.hand.tile.Add(tile);
-                GameData.lastTile = tile;
+                player.hand.Add(tile);
+                gameData.lastTile = tile;
                 if (OnDraw != null)
                 {
                     OnDraw(tile);
@@ -291,30 +293,30 @@ namespace Tenhou
             }
             else if ((match = new Regex(@"([DEFGdefg])(\d+)").Match(reader.Name)).Success)
             {
-                Player player = GameData.player[match.Groups[1].Value.ToLower()[0] - 'd'];
+                Player currentPlayer = gameData.players[match.Groups[1].Value.ToLower()[0] - 'd'];
                 Tile tile = new Tile(int.Parse(match.Groups[2].Value));
-                player.graveyard.tile.Add(tile);
-                GameData.lastTile = tile;
+                currentPlayer.graveyard.Add(tile);
+                gameData.lastTile = tile;
                 if (OnDiscard != null)
                 {
-                    OnDiscard(player, tile);
+                    OnDiscard(currentPlayer, tile);
                 }
                 if (reader["t"] != null)
                 {
                     if (OnWait != null)
                     {
-                        OnWait(tile, player.num);
+                        OnWait(tile, currentPlayer);
                     }
                 }
             }
             else if (reader.Name == "DORA")
             {
                 Tile tile = new Tile(int.Parse(reader["hai"]));
-                GameData.dora.tile.Add(tile);
+                gameData.dora.Add(tile);
             }
             else if (reader.Name == "N")
             {
-                Player player = GameData.player[int.Parse(reader["who"])];
+                Player currentPlayer = gameData.players[int.Parse(reader["who"])];
 
                 int type;
                 int[] hai = new int[4];
@@ -326,18 +328,18 @@ namespace Tenhou
                     if (num != -1)
                     {
                         tiles.Add(new Tile(num));
-                        if (GameData.lastTile != null && GameData.lastTile.Num == num)
+                        if (gameData.lastTile != null && gameData.lastTile.Id == num)
                         {
-                            GameData.lastTile.IsTakenAway = true;
+                            gameData.lastTile.IsTakenAway = true;
                         }
                     }
                 }
 
-                player.fuuro.tile.Add(tiles);
+                currentPlayer.fuuro.Add(tiles);
 
-                if (player.num == 0)
+                if (currentPlayer == player)
                 {
-                    GameData.hand.tile.RemoveWhere((tile) => tiles.Exists((_tile) => tile.Num == _tile.Num));
+                    player.hand.RemoveWhere((tile) => tiles.Exists((_tile) => tile.Id == _tile.Id));
                 }
 
                 if (OnUnknownEvent != null)
@@ -347,8 +349,8 @@ namespace Tenhou
             }
             else if (reader.Name == "REACH")
             {
-                Player player = GameData.player[int.Parse(reader["who"])];
-                player.reached = true;
+                Player currentPlayer = gameData.players[int.Parse(reader["who"])];
+                currentPlayer.reached = true;
                 if (OnUnknownEvent != null)
                 {
                     OnUnknownEvent(str);
@@ -361,40 +363,40 @@ namespace Tenhou
             switch (int.Parse(new Regex(@"^(\d+)").Match(seed).Groups[1].Value))
             {
                 case 0: case 1: case 2: case 3:
-                    GameData.direction = "E";
+                    gameData.direction = "E";
                     break;
                 case 4: case 5: case 6: case 7:
-                    GameData.direction = "S";
+                    gameData.direction = "S";
                     break;
                 case 8: case 9: case 10: case 11:
-                    GameData.direction = "W";
+                    gameData.direction = "W";
                     break;
             }
 
-            GameData.dora.tile.Clear();
+            gameData.dora.Clear();
             int dora = int.Parse(new Regex(@"(\d+)$").Match(seed).Groups[1].Value);
-            GameData.dora.tile.Add(new Tile(dora));
+            gameData.dora.Add(new Tile(dora));
 
             MatchCollection pointCollection = new Regex(@"\d+").Matches(ten);
             for (int i = 0; i < 4; i++)
             {
-                GameData.player[i].point = int.Parse(pointCollection[i].Value);
-                GameData.player[i].reached = false;
-                GameData.player[i].graveyard = new Graveyard();
-                GameData.player[i].fuuro = new Fuuro();
+                gameData.players[i].point = int.Parse(pointCollection[i].Value);
+                gameData.players[i].reached = false;
+                gameData.players[i].graveyard = new Graveyard();
+                gameData.players[i].fuuro = new Fuuro();
+                gameData.players[i].hand = new Hand();
             }
 
             int oyaNum = int.Parse(oya);
-            GameData.player[oyaNum].direction = "E";
-            GameData.player[(oyaNum + 1) % 4].direction = "S";
-            GameData.player[(oyaNum + 2) % 4].direction = "W";
-            GameData.player[(oyaNum + 3) % 4].direction = "N";
+            gameData.players[oyaNum].direction = "E";
+            gameData.players[(oyaNum + 1) % 4].direction = "S";
+            gameData.players[(oyaNum + 2) % 4].direction = "W";
+            gameData.players[(oyaNum + 3) % 4].direction = "N";
 
-            GameData.hand.tile.Clear();
             MatchCollection haiCollection = new Regex(@"\d+").Matches(hai);
             foreach (Match haiMatch in haiCollection)
             {
-                GameData.hand.tile.Add(new Tile(int.Parse(haiMatch.Value)));
+                player.hand.Add(new Tile(int.Parse(haiMatch.Value)));
             }
         }
 

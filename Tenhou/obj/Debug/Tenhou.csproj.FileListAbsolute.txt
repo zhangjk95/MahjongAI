@@ -16,3 +16,9 @@ D:\C#\TenhouClient\Tenhou\obj\Debug\Tenhou.pdb
 D:\C#\TenhouClient\Tenhou\bin\Debug\Tenhou.exe
 D:\C#\TenhouClient\Tenhou\bin\Debug\Tenhou.pdb
 D:\C#\TenhouClient\Tenhou\obj\Debug\Tenhou.csprojResolveAssemblyReference.cache
+D:\Achived\C#\TenhouClient\Tenhou\bin\Debug\Tenhou.exe.config
+D:\Achived\C#\TenhouClient\Tenhou\obj\Debug\Tenhou.exe
+D:\Achived\C#\TenhouClient\Tenhou\obj\Debug\Tenhou.pdb
+D:\Achived\C#\TenhouClient\Tenhou\bin\Debug\Tenhou.exe
+D:\Achived\C#\TenhouClient\Tenhou\bin\Debug\Tenhou.pdb
+D:\Achived\C#\TenhouClient\Tenhou\obj\Debug\Tenhou.csprojResolveAssemblyReference.cache

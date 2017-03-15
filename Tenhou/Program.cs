@@ -14,23 +14,23 @@ namespace Tenhou
     {
         static TenhouClient client;
         static Monitor monitor;
-        static Controller controller;
+        static AIController controller;
         static AutoResetEvent gameEnd = new AutoResetEvent(false);
         static bool running = true;
 
         static void Init(string programPath)
         {
-            client = new TenhouClient("aixile");
-            
+            client = new TenhouClient("AIxile"); //ID66DF557C-ebXggNQT
+
             gameEnd.Reset();
 
             client.OnLogin += () =>
             {
-                //client.EnterLobby(0);
+                client.EnterLobby(0);
                 client.Join(GameType.North);
-                client.Join(GameType.North_fast);
-                client.Join(GameType.East);
-                client.Join(GameType.East_fast);
+                //client.Join(GameType.North_fast);
+                //client.Join(GameType.East);
+                //client.Join(GameType.East_fast);
             };
             client.OnGameEnd += () => { gameEnd.Set(); };
             client.OnClose += () => { gameEnd.Set(); };
@@ -38,7 +38,7 @@ namespace Tenhou
             monitor = new Monitor(client);
             monitor.Start();
 
-            controller = new Controller(client, programPath);
+            controller = new AIController(client);
             controller.Start();
 
             client.Login();
@@ -62,7 +62,7 @@ namespace Tenhou
 
         static void Main(string[] args)
         {
-            //Trace.Listeners.Add(new ConsoleTraceListener());
+            Trace.Listeners.Add(new ConsoleTraceListener());
             StreamWriter writer = File.CreateText("log.txt");
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));

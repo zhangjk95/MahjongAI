@@ -65,20 +65,20 @@ namespace Tenhou
         private void OnDraw(Tile tile)
         {
             Console.WriteLine("draw {0}", tile.Name);
-            Console.WriteLine(client.GameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
+            Console.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name));
         }
 
-        private void OnWait(Tile tile, int fromPlayer)
+        private void OnWait(Tile tile, Player fromPlayer)
         {
-            Console.WriteLine("wait {0} from {1}", tile.Name, fromPlayer);
+            Console.WriteLine("wait {0} from {1}", tile.Name, fromPlayer.id);
         }
 
         private void OnDiscard(Player player, Tile tile)
         {
-            if (player.num == 0)
+            if (player.id == 0)
             {
                 Console.WriteLine("discard {0}", tile.Name);
-                Console.WriteLine(client.GameData.hand.tile.ToString(" ", (handTile) => handTile.Name));
+                Console.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name));
             }
         }
 

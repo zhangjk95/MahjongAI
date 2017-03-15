@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Tenhou.Models
 {
-    class Hand
+    class Hand: SortedSet<Tile>
     {
-        public SortedSet<Tile> tile = new SortedSet<Tile>();
+        
     }
 }

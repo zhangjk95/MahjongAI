@@ -8,12 +8,13 @@ namespace Tenhou.Models
 {
     class Player
     {
-        public int num;
+        public int id;
         public string name;
         public int level;
         public string direction;
         public int point;
         public bool reached;
+        public Hand hand = new Hand();
         public Graveyard graveyard = new Graveyard();
         public Fuuro fuuro = new Fuuro();
     }

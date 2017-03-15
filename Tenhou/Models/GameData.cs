@@ -8,9 +8,9 @@ namespace Tenhou.Models
 {
     class GameData
     {
-        public Hand hand = new Hand();
         public Dora dora = new Dora();
-        public Player[] player = new Player[4];
+        public Player[] players = new Player[4];
+        public Player player;
         public string direction;
         public Tile lastTile;
 
@@ -18,9 +18,10 @@ namespace Tenhou.Models
         {
             for (int i = 0; i < 4; i++)
             {
-                player[i] = new Player();
-                player[i].num = i;
+                players[i] = new Player();
+                players[i].id = i;
             }
+            player = players[0];
         }
     }
 }

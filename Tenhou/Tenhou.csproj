@@ -41,7 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller.cs" />
+    <Compile Include="AIController.cs" />
+    <Compile Include="ProgramController.cs" />
     <Compile Include="IEnumerableExtension.cs" />
     <Compile Include="Models\Dora.cs" />
     <Compile Include="Models\GameData.cs" />

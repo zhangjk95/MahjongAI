@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Tenhou.Models
 {
-    class Dora
+    class Dora: List<Tile>
     {
-        public List<Tile> tile = new List<Tile>();
+
     }
 }

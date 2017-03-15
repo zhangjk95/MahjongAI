@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Tenhou.Models
 {
-    class Graveyard
+    class Graveyard : List<Tile>
     {
-        public List<Tile> tile = new List<Tile>();
+        
     }
 }
