@@ -18,15 +18,29 @@ namespace Tenhou
             client.gameData.players[3].direction = Direction.S;
             client.gameData.players[0].direction = Direction.W;
             client.gameData.players[1].direction = Direction.N;
-            client.gameData.dora = new Dora() { new Tile(91) };
+            client.gameData.dora = new Dora() { new Tile(81) };
             client.player.hand = new Hand() {
-                new Tile(30), new Tile(37), new Tile(24), new Tile(134),
-                new Tile(26), new Tile(19), new Tile(106), new Tile(1),
-                new Tile(4), new Tile(83), new Tile(59), new Tile(10),
-                new Tile(99), new Tile(20)
+                new Tile(0), new Tile(4), new Tile(20), new Tile(24),
+                new Tile(48), new Tile(49), new Tile(56), new Tile(60),
+                new Tile(76), new Tile(80), new Tile(100), new Tile(116),
+                new Tile(124), new Tile(128)
             };
             var ai = new AIController(client);
             ai.chooseDiscardForAtk();
+        }
+
+        static void test2()
+        {
+            var point = MahjongHelper.getInstance().calcPoint(new Hand()
+            {
+                new Tile(0), new Tile(4), new Tile(8),
+                new Tile(36), new Tile(40), new Tile(44),
+                new Tile(48), new Tile(52), new Tile(56),
+                new Tile(96), new Tile(100), new Tile(104),
+                new Tile(124), new Tile(125)
+            }, new Tile(40), Direction.E, Direction.E, new Fuuro(), new Dora { new Tile(68) }, false);
+            Console.WriteLine(point);
+            Console.ReadKey();
         }
     }
 }

@@ -51,11 +51,19 @@ namespace Tenhou
 
         public static MahjongHelper getInstance()
         {
-            if (instances == null)
+            lock (indexLock)
             {
-                instances = new List<MahjongHelper>() {
-                    new MahjongHelper()
-                };
+                if (instances == null)
+                {
+                    instances = new List<MahjongHelper>() {
+                        new MahjongHelper(),
+                        new MahjongHelper(),
+                        new MahjongHelper(),
+                        new MahjongHelper()
+                    };
+                }
+
+                currentInstanceIndex = currentInstanceIndex == 3 ? 0 : currentInstanceIndex + 1;
             }
             
             return instances[currentInstanceIndex];
@@ -121,6 +129,7 @@ namespace Tenhou
         private void send(params object[] obj)
         {
             var str = string.Join(" ", obj);
+            //Console.WriteLine(str);
             process.StandardInput.WriteLine(str);
         }
 

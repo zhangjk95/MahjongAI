@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tenhou.Models;
+using System.Diagnostics;
 
 namespace Tenhou
 {
@@ -37,22 +38,31 @@ namespace Tenhou
                 }
             }
             else {
-                Tile discardTile = chooseDiscard();
-                if (shouldAnKan(discardTile))
+                EvalResult evalResult;
+                Tile discardTile = chooseDiscardForAtk(out evalResult);
+                if (!shouldDef(evalResult))
                 {
-                    client.Ankan(discardTile);
+                    if (shouldAnKan(discardTile))
+                    {
+                        client.Ankan(discardTile);
+                    }
+                    else if (shouldKaKan(discardTile))
+                    {
+                        client.Kakan(discardTile);
+                    }
+                    else if (shouldReach(discardTile))
+                    {
+                        client.Reach(discardTile);
+                        client.Discard(discardTile);
+                    }
+                    else {
+                        client.Discard(discardTile);
+                    }
                 }
-                else if (shouldKaKan(discardTile))
+                else
                 {
-                    client.Kakan(discardTile);
-                }
-                else if (shouldReach())
-                {
-                    client.Reach(discardTile);
-                    client.Discard(discardTile);
-                }
-                else {
-                    client.Discard(discardTile);
+                    Tile newDiscardTile = chooseDiscardForDef();
+                    client.Discard(newDiscardTile);
                 }
             }
         }
@@ -72,14 +82,20 @@ namespace Tenhou
             }
             else
             {
-                FuuroGroup[] candidates = new FuuroGroup[]
+                List<FuuroGroup> candidates = new List<FuuroGroup>()
                 {
-                    tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId + 1, 1), Tuple.Create(tile.GenaralId + 2, 1) }, tile),
-                    tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId - 1, 1), Tuple.Create(tile.GenaralId + 1, 1) }, tile),
-                    tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId - 2, 1), Tuple.Create(tile.GenaralId - 1, 1) }, tile),
                     tryGetFuuroGroup(FuuroType.pon, new[] { Tuple.Create(tile.GenaralId, 2) }, tile),
                     tryGetFuuroGroup(FuuroType.minkan, new[] { Tuple.Create(tile.GenaralId, 3) }, tile)
                 };
+                if (fromPlayer.id == 3 && tile.Type != "z")
+                {
+                    candidates.AddRange(new List<FuuroGroup>()
+                    {
+                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId + 1, 1), Tuple.Create(tile.GenaralId + 2, 1) }, tile),
+                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId - 1, 1), Tuple.Create(tile.GenaralId + 1, 1) }, tile),
+                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId - 2, 1), Tuple.Create(tile.GenaralId - 1, 1) }, tile)
+                    });
+                }
                 Tuple<FuuroGroup, Tile, EvalResult> bestResult = Tuple.Create<FuuroGroup, Tile, EvalResult>(null, null, currentEvalResult);
 
                 foreach (var candidate in candidates)
@@ -96,6 +112,14 @@ namespace Tenhou
                     if (candidate.type != FuuroType.minkan)
                     {
                         discardTile = chooseDiscardForAtk(out tmpResult);
+
+                        // 不能食替
+                        if (discardTile.GenaralId == tile.GenaralId 
+                            || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId - 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId - 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId - 1)
+                            || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId + 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId + 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId + 1))
+                        {
+                            tmpResult = null;
+                        }
                     }
                     else
                     {
@@ -134,19 +158,20 @@ namespace Tenhou
             player.hand.Remove(tile);
         }
 
-        private bool shouldReach()
+        private bool shouldReach(Tile discardTile)
         {
+            player.hand.Remove(discardTile);
+            player.graveyard.Add(discardTile);
+            EvalResult evalResult = eval13(1, false);
+            player.graveyard.Remove(discardTile);
+            player.hand.Add(discardTile);
+
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4
-                && !shouldDef() && calcDistance() == 0 /*&& TODO: ePoint < 7700 || reachedPlayers >= 2 */;
+                && calcDistance() == 0 && (evalResult.ePoint < 7700 || gameData.players.Count(p => p.reached) >= 2); // 期望得点<7700 或 立直人数 >=2
         }
 
         private bool shouldAnKan(Tile tile)
         {
-            if (shouldDef())
-            {
-                return false;
-            }
-
             FuuroGroup group = tryGetFuuroGroup(FuuroType.ankan, new[] { Tuple.Create(tile.GenaralId, 4) });
             if (group == null)
             {
@@ -172,39 +197,31 @@ namespace Tenhou
 
         private bool shouldKaKan(Tile tile)
         {
-            return !shouldDef() && player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GenaralId == tile.GenaralId));
+            return player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GenaralId == tile.GenaralId));
         }
 
-        private Tile chooseDiscard()
-        {
-            if (shouldDef())
-            {
-                return chooseDiscardForDef();
-            }
-            else
-            {
-                return chooseDiscardForAtk();
-            }
-        }
-
-        private bool shouldDef()
+        private bool shouldDef(EvalResult evalResult)
         {
             return false;
         }
 
-        public Tile chooseDiscardForAtk(int depth = defaultDepth)
+        public Tile chooseDiscardForAtk(int depth = -1)
         {
             EvalResult evalResult;
             var res = chooseDiscardForAtk(out evalResult, depth);
             return res;
         }
 
-        private Tile chooseDiscardForAtk(out EvalResult evalResult, int depth = defaultDepth)
+        private Tile chooseDiscardForAtk(out EvalResult evalResult, int depth = -1)
         {
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
             Tuple<Tile, EvalResult> bestResult = null;
             var currentDistance = calcDistance();
+            if (depth == -1)
+            {
+                Trace.WriteLine("Distance: " + currentDistance);
+            }
 
             foreach (var tile in handTmp)
             {
@@ -222,7 +239,11 @@ namespace Tenhou
                         var result = evalResults[tile.Name] = eval13(depth);
                         if (doraValue(tile) > 0)
                         {
-                            result.ePromotionCount[0] += 1; // 如果这张牌是dora，允许进张数少1
+                            result.ePromotionCount[0] -= 1; // 如果这张牌是dora，打掉的话视为进张数少1
+                        }
+                        if (depth == -1)
+                        {
+                            Trace.WriteLine(string.Format("Option: discard {0}, ePromotionCount: {1}, ePoint: {2}", tile.Name, result.ePromotionCount[0], result.ePoint));
                         }
                     }
                     player.hand.Add(tile);
@@ -247,20 +268,36 @@ namespace Tenhou
                 }
             }
 
+            if (depth == -1)
+            {
+                Trace.WriteLine("Result: discard " + bestResult.Item1.Name);
+            }
             evalResult = bestResult.Item2;
             return bestResult.Item1;
         }
 
-        private EvalResult eval13(int depth = defaultDepth)
+        private EvalResult eval13(int depth = -1, bool riichi = true)
         {
             var res = new EvalResult();
             res.Distance = calcDistance();
+            if (depth == -1)
+            {
+                if (res.Distance > defaultDepth - 1) // 如果向听数高就减少搜索深度
+                {
+                    depth = defaultDepth - 1;
+                }
+                else
+                {
+                    depth = defaultDepth;
+                }
+            }
             res.DoraInFuuroCount = player.fuuro.Tiles.Sum(t => doraValue(t));
             res.DoraCount = player.hand.Sum(t => doraValue(t)) + res.DoraInFuuroCount;
             res.FuuroCount = player.fuuro.VisibleCount;
             res.KanCount = player.fuuro.Count(f => f.type == FuuroType.ankan || f.type == FuuroType.kakan || f.type == FuuroType.minkan);
             var promotionTiles = new List<Tuple<Tile, EvalResult>>();
             var evalResults = new Dictionary<string, EvalResult>();
+            var candidates = new HashSet<string>();
             var visibleTiles = getVisibleTiles().ToList();
             for (var i = 0; i < Tile.TotalCount; i++)
             {
@@ -273,7 +310,7 @@ namespace Tenhou
                         player.hand.Add(tile);
                         if (calcDistance() < res.Distance)
                         {
-                            currentResult = evalResults[tile.Name] = eval14(tile, depth);
+                            currentResult = evalResults[tile.Name] = eval14(tile, depth, riichi);
                         }
                         else
                         {
@@ -300,7 +337,7 @@ namespace Tenhou
             return res;
         }
 
-        private EvalResult eval14(Tile lastTile, int depth = defaultDepth)
+        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true)
         {
             var res = new EvalResult();
             res.Distance = calcDistance();
@@ -308,7 +345,7 @@ namespace Tenhou
             {
                 if (res.Distance == -1)
                 {
-                    res.ePoint = calcPoint(lastTile);
+                    res.ePoint = calcPoint(lastTile, riichi);
                 }
                 res.ePromotionCount = new List<double>();
             }

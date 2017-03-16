@@ -130,9 +130,9 @@ namespace Tenhou
             return false;
         }
 
-        private int calcPoint(Tile lastTile)
+        private int calcPoint(Tile lastTile, bool riichi = true)
         {
-            return MahjongHelper.getInstance().calcPoint(player.hand, lastTile, gameData.direction, player.direction, player.fuuro, gameData.dora, player.fuuro.Count == 0);
+            return MahjongHelper.getInstance().calcPoint(player.hand, lastTile, gameData.direction, player.direction, player.fuuro, gameData.dora, riichi && player.fuuro.Count == 0);
         }
     }
 }

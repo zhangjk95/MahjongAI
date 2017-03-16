@@ -62,7 +62,9 @@ namespace Tenhou
 
         static void Main(string[] args)
         {
-            Trace.Listeners.Add(new ConsoleTraceListener());
+            var listener = new ConsoleTraceListener();
+            listener.Filter = new EventTypeFilter(SourceLevels.Off);
+            Trace.Listeners.Add(listener);
             StreamWriter writer = File.CreateText("log.txt");
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
