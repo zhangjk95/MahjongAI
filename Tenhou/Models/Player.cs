@@ -11,7 +11,7 @@ namespace Tenhou.Models
         public int id;
         public string name;
         public int level;
-        public string direction;
+        public Direction direction;
         public int point;
         public bool reached;
         public Hand hand = new Hand();

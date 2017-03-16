@@ -18,17 +18,17 @@ namespace Tenhou
         static AutoResetEvent gameEnd = new AutoResetEvent(false);
         static bool running = true;
 
-        static void Init(string programPath)
+        static void Init()
         {
-            client = new TenhouClient("AIxile"); //ID66DF557C-ebXggNQT
+            client = new TenhouClient("AIxile");
 
             gameEnd.Reset();
 
             client.OnLogin += () =>
             {
                 client.EnterLobby(0);
-                client.Join(GameType.North);
-                //client.Join(GameType.North_fast);
+                client.Join(GameType.South);
+                //client.Join(GameType.South_fast);
                 //client.Join(GameType.East);
                 //client.Join(GameType.East_fast);
             };
@@ -70,7 +70,7 @@ namespace Tenhou
             
             while (running)
             {
-                Init(args[0]);
+                Init();
                 gameEnd.WaitOne();
                 client.Close();
                 CheckKeyPress();

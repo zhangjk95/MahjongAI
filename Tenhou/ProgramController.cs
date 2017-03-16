@@ -9,16 +9,12 @@ using Tenhou.Models;
 
 namespace Tenhou
 {
-    class ProgramController
+    class ProgramController: Controller
     {
-        TenhouClient client;
         Process process;
-        bool isRunning;
 
-        public ProgramController(TenhouClient client, string program)
+        public ProgramController(TenhouClient client, string program): base(client)
         {
-            this.client = client;
-
             this.process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
@@ -31,44 +27,28 @@ namespace Tenhou
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
-            };          
-
-            this.isRunning = false;
+            };
         }
 
-        ~ProgramController()
+        public override void Start()
         {
-            Stop();
-        }
-
-        public void Start()
-        {
-            client.OnDraw += OnDraw;
-            client.OnWait += OnWait;
-            client.OnClose += OnClose;
-
+            base.Start();
             process.Start();
             process.StandardInput.AutoFlush = true;
             process.OutputDataReceived += process_OutputDataReceived;
             process.BeginOutputReadLine();
-
-            isRunning = true;
         }
 
-        public void Stop()
+        public override void Stop()
         {
+            base.Stop();
+
             if (isRunning)
             {
                 try
                 {
-                    client.OnDraw -= OnDraw;
-                    client.OnWait -= OnWait;
-                    client.OnClose -= OnClose;
-
                     process.Kill();
                     process.OutputDataReceived -= process_OutputDataReceived;
-
-                    isRunning = false;
                 }
                 catch { }
             }
@@ -89,17 +69,12 @@ namespace Tenhou
             Trace.TraceInformation("Program input: {0}", message);
         }
 
-        private void OnClose()
-        {
-            Stop();
-        }
-
-        private void OnDraw(Tile tile)
+        protected override void OnDraw(Tile tile)
         {
             Send(string.Format("draw {0}", tile.Name));
         }
 
-        private void OnWait(Tile tile, Player fromPlayer)
+        protected override void OnWait(Tile tile, Player fromPlayer)
         {
             Send(string.Format("wait {0} {1}", tile.Name, fromPlayer.id));
         }
@@ -118,11 +93,11 @@ namespace Tenhou
                 case "direction":
                     if (cmd[1] == "0")
                     {
-                        Send(client.gameData.direction);
+                        Send(client.gameData.direction.ToString());
                     }
                     else
                     {
-                        Send(client.gameData.players[int.Parse(cmd[2])].direction);
+                        Send(client.gameData.players[int.Parse(cmd[2])].direction.ToString());
                     }
                     break;
                 case "graveyard":
@@ -169,8 +144,8 @@ namespace Tenhou
                 case "ankan":
                     client.Ankan(handTiles.First((tile) => tile.Name == cmd[1]));
                     break;
-                case "chakan":
-                    client.Chakan(handTiles.First((tile) => tile.Name == cmd[1]));
+                case "kakan":
+                    client.Kakan(handTiles.First((tile) => tile.Name == cmd[1]));
                     break;
                 case "ron":
                     client.Ron();

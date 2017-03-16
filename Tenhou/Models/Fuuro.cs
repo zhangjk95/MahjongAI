@@ -6,14 +6,36 @@ using System.Threading.Tasks;
 
 namespace Tenhou.Models
 {
-    class Fuuro: List<List<Tile>>
+    class Fuuro: List<FuuroGroup>
     {
-        public List<Tile> Tiles
+        public IEnumerable<Tile> Tiles
         {
             get
             {
-                return this.SelectMany(group => group).ToList();
+                return this.SelectMany(group => group);
             }
         }
+
+        public int VisibleCount
+        {
+            get
+            {
+                return this.Where(group => group.type != FuuroType.ankan).Count();
+            }
+        }
+    }
+
+    class FuuroGroup : List<Tile>
+    {
+        public FuuroType type;
+    }
+
+    enum FuuroType
+    {
+        chii,
+        pon,
+        minkan,
+        ankan,
+        kakan
     }
 }

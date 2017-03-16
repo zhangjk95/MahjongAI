@@ -26,8 +26,15 @@ namespace Tenhou
         public event Action<string> OnUnknownEvent;
 
         public GameData gameData;
-        public Player player;
         public bool connected;
+
+        public Player player
+        {
+            get
+            {
+                return gameData.player;
+            }
+        }
 
         private SocketClient client = new SocketClient(server, port);
         private string username;
@@ -91,10 +98,10 @@ namespace Tenhou
                 case GameType.East_fast:
                     typeStr = lobby.ToString() + ",65";
                     break;
-                case GameType.North:
+                case GameType.South:
                     typeStr = lobby.ToString() + ",9";
                     break;
-                case GameType.North_fast:
+                case GameType.South_fast:
                     typeStr = lobby.ToString() + ",73";
                     break;
             }
@@ -148,7 +155,7 @@ namespace Tenhou
             client.Send(string.Format("<N type=\"4\" hai=\"{0}\" />", tile));
         }
 
-        public void Chakan(Tile tile)
+        public void Kakan(Tile tile)
         {
             client.Send(string.Format("<N type=\"5\" hai=\"{0}\" />", tile));
         }
@@ -234,7 +241,6 @@ namespace Tenhou
                 client.Send("<GOK />");
                 NextReady();
                 gameData = new GameData();
-                player = gameData.player;
             }
             else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
             {
@@ -259,7 +265,7 @@ namespace Tenhou
             {
                 string logID = reader["log"];
                 int oya = int.Parse(reader["oya"]);
-                SaveTenhouLog(logID, oya);
+                SaveTenhouLog(logID, oya == 0 ? 0 : 4 - oya);
                 if (OnGameStart != null)
                 {
                     OnGameStart(false);
@@ -297,6 +303,7 @@ namespace Tenhou
                 Tile tile = new Tile(int.Parse(match.Groups[2].Value));
                 currentPlayer.graveyard.Add(tile);
                 gameData.lastTile = tile;
+                gameData.remainingTile--;
                 if (OnDiscard != null)
                 {
                     OnDiscard(currentPlayer, tile);
@@ -322,7 +329,28 @@ namespace Tenhou
                 int[] hai = new int[4];
                 decodeM(int.Parse(reader["m"]), out type, out hai[0], out hai[1], out hai[2], out hai[3]);
 
-                List<Tile> tiles = new List<Tile>();
+                FuuroGroup tiles = new FuuroGroup();
+                switch (type)
+                {
+                    case 3:
+                        tiles.type = FuuroType.chii;
+                        break;
+                    case 1:
+                        tiles.type = FuuroType.pon;
+                        break;
+                    case 2:
+                        tiles.type = FuuroType.minkan;
+                        gameData.remainingTile--;
+                        break;
+                    case 4:
+                        tiles.type = FuuroType.ankan;
+                        gameData.remainingTile--;
+                        break;
+                    case 5:
+                        tiles.type = FuuroType.kakan;
+                        gameData.remainingTile--;
+                        break;
+                }
                 foreach (int num in hai)
                 {
                     if (num != -1)
@@ -363,15 +391,17 @@ namespace Tenhou
             switch (int.Parse(new Regex(@"^(\d+)").Match(seed).Groups[1].Value))
             {
                 case 0: case 1: case 2: case 3:
-                    gameData.direction = "E";
+                    gameData.direction = Direction.E;
                     break;
                 case 4: case 5: case 6: case 7:
-                    gameData.direction = "S";
+                    gameData.direction = Direction.S;
                     break;
                 case 8: case 9: case 10: case 11:
-                    gameData.direction = "W";
+                    gameData.direction = Direction.W;
                     break;
             }
+
+            gameData.remainingTile = GameData.initialRemainingTile;
 
             gameData.dora.Clear();
             int dora = int.Parse(new Regex(@"(\d+)$").Match(seed).Groups[1].Value);
@@ -388,10 +418,10 @@ namespace Tenhou
             }
 
             int oyaNum = int.Parse(oya);
-            gameData.players[oyaNum].direction = "E";
-            gameData.players[(oyaNum + 1) % 4].direction = "S";
-            gameData.players[(oyaNum + 2) % 4].direction = "W";
-            gameData.players[(oyaNum + 3) % 4].direction = "N";
+            gameData.players[oyaNum].direction = Direction.E;
+            gameData.players[(oyaNum + 1) % 4].direction = Direction.S;
+            gameData.players[(oyaNum + 2) % 4].direction = Direction.W;
+            gameData.players[(oyaNum + 3) % 4].direction = Direction.N;
 
             MatchCollection haiCollection = new Regex(@"\d+").Matches(hai);
             foreach (Match haiMatch in haiCollection)
@@ -417,10 +447,10 @@ namespace Tenhou
             }
         }
 
-        private void SaveTenhouLog(string logID, int oya)
+        private void SaveTenhouLog(string logID, int tw)
         {
             StreamWriter writer = new StreamWriter("TenhouLog.txt", true);
-            writer.WriteLine("http://tenhou.net/0/?log={0} oya:{1}", logID, oya);
+            writer.WriteLine("http://tenhou.net/0/?log={0}&tw={1}", logID, tw);
             writer.Close();
         }
 

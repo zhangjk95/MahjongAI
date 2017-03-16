@@ -17,5 +17,15 @@ namespace Tenhou
             IEnumerable<string> strList = list.Select((item) => convert(item));
             return string.Join(separator, strList);
         }
+
+        public static double Product<T>(this IEnumerable<T> list, Func<T, double> selector)
+        {
+            double res = 1;
+            foreach (var item in list)
+            {
+                res *= selector(item);
+            }
+            return res;
+        }
     }
 }

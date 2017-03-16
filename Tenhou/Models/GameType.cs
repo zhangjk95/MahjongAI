@@ -10,7 +10,7 @@ namespace Tenhou.Models
     {
         East,
         East_fast,
-        North,
-        North_fast
+        South,
+        South_fast
     }
 }

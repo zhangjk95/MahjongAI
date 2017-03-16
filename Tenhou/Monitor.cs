@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,101 +8,64 @@ using Tenhou.Models;
 
 namespace Tenhou
 {
-    class Monitor
+    class Monitor: Controller
     {
-        TenhouClient client;
-        bool isRunning;
-
-        public Monitor(TenhouClient client)
+        public Monitor(TenhouClient client): base(client)
         {
-            this.client = client;
-            this.isRunning = false;
+
         }
 
-        ~Monitor()
+        protected override void OnLogin()
         {
-            if (isRunning)
-            {
-                Stop();
-            }
+            Trace.WriteLine("Login");
         }
 
-        public void Start() 
+        protected override void OnClose()
         {
-            client.OnDraw += OnDraw;
-            client.OnWait += OnWait;
-            client.OnDiscard += OnDiscard;
-            client.OnGameStart += OnGameStart;
-            client.OnGameEnd += OnGameEnd;
-            client.OnLogin += OnLogin;
-            client.OnClose += OnClose;
-            client.OnUnknownEvent += OnUnknownEvent;
-            isRunning = true;
+            base.OnClose();
+            Trace.WriteLine("Client closed.");
         }
 
-        void OnLogin()
+        protected override void OnDraw(Tile tile)
         {
-            Console.WriteLine("Login");
+            Trace.WriteLine(string.Format("draw {0}", tile.Name));
+            Trace.WriteLine(client.player.hand.ToString(" ", t => t.Name) + " | " + client.player.fuuro.Tiles.ToString(" ", t => t.Name));
         }
 
-        public void Stop()
+        protected override void OnWait(Tile tile, Player fromPlayer)
         {
-            client.OnDraw -= OnDraw;
-            client.OnWait -= OnWait;
-            client.OnDiscard -= OnDiscard;
-            client.OnGameStart -= OnGameStart;
-            client.OnClose -= OnClose;
-            client.OnGameEnd -= OnGameEnd;
-            client.OnUnknownEvent -= OnUnknownEvent;
-            isRunning = false;
+            Trace.WriteLine(string.Format("wait {0} from {1}", tile.Name, fromPlayer.id));
         }
 
-        private void OnClose()
-        {
-            Stop();
-            Console.WriteLine("Client closed.");
-        }
-
-        private void OnDraw(Tile tile)
-        {
-            Console.WriteLine("draw {0}", tile.Name);
-            Console.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name));
-        }
-
-        private void OnWait(Tile tile, Player fromPlayer)
-        {
-            Console.WriteLine("wait {0} from {1}", tile.Name, fromPlayer.id);
-        }
-
-        private void OnDiscard(Player player, Tile tile)
+        protected override void OnDiscard(Player player, Tile tile)
         {
             if (player.id == 0)
             {
-                Console.WriteLine("discard {0}", tile.Name);
-                Console.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name));
+                Trace.WriteLine(string.Format("discard {0}", tile.Name));
+                Trace.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name) + " | " + client.player.fuuro.Tiles.ToString(" ", t => t.Name));
             }
         }
 
-        private void OnGameStart(bool continued)
+        protected override void OnGameStart(bool continued)
         {
             if (!continued)
             {
-                Console.WriteLine("Game started.");
+                Trace.WriteLine("Game started.");
             }
             else
             {
-                Console.WriteLine("Game continued.");
+                Trace.WriteLine("Game continued.");
             }
         }
 
-        private void OnGameEnd()
+        protected override void OnGameEnd()
         {
-            Console.WriteLine("Game ended.");
+            Trace.WriteLine("Game ended.");
         }
 
-        private void OnUnknownEvent(string str)
+        protected override void OnUnknownEvent(string str)
         {
-            Console.WriteLine(str);
+            Trace.WriteLine(str);
         }
     }
 }

@@ -8,11 +8,20 @@ namespace Tenhou.Models
 {
     class GameData
     {
+        public const int initialRemainingTile = 69;
         public Dora dora = new Dora();
         public Player[] players = new Player[4];
-        public Player player;
-        public string direction;
+        public Direction direction;
         public Tile lastTile;
+        public int remainingTile;
+
+        public Player player
+        {
+            get
+            {
+                return players[0];
+            }
+        }
 
         public GameData()
         {
@@ -21,7 +30,6 @@ namespace Tenhou.Models
                 players[i] = new Player();
                 players[i].id = i;
             }
-            player = players[0];
         }
     }
 }

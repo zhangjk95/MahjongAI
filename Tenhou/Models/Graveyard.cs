@@ -8,6 +8,16 @@ namespace Tenhou.Models
 {
     class Graveyard : List<Tile>
     {
-        
+        public IEnumerable<Tile> Get(bool includingTakenAway = true)
+        {
+            if (includingTakenAway)
+            {
+                return this;
+            }
+            else
+            {
+                return this.Where(tile => !tile.IsTakenAway);
+            }
+        }
     }
 }

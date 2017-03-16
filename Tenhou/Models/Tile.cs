@@ -8,6 +8,8 @@ namespace Tenhou.Models
 {
     class Tile: IComparable<Tile>
     {
+        public const int TotalCount = 136;
+
         private int id;
         private bool isTakenAway;
 
@@ -16,6 +18,14 @@ namespace Tenhou.Models
             get
             {
                 return id;
+            }
+        }
+
+        public int GenaralId
+        {
+            get
+            {
+                return map2[id];
             }
         }
 
@@ -76,7 +86,28 @@ namespace Tenhou.Models
             this.id = id;
         }
 
-        override public string ToString() {
+        public int getNextGeneralId()
+        {
+            var id = GenaralId;
+            if (id == 9 || id == 19 || id == 29)
+            {
+                return id - 8;
+            }
+            else if (id == 34)
+            {
+                return 31;
+            }
+            else if (id == 37)
+            {
+                return 35;
+            }
+            else
+            {
+                return id + 1;
+            }
+        }
+
+        public override string ToString() {
             return id.ToString();
         }
 
@@ -85,7 +116,7 @@ namespace Tenhou.Models
             return this.id - other.id;
         }
 
-        Dictionary<int, string> map = new Dictionary<int, string>() {
+        private static Dictionary<int, string> map = new Dictionary<int, string>() {
             {0, "1m"}, {1, "1m"}, {2, "1m"}, {3, "1m"}, 
             {4, "2m"}, {5, "2m"}, {6, "2m"}, {7, "2m"}, 
             {8, "3m"}, {9, "3m"}, {10, "3m"}, {11, "3m"}, 
@@ -120,6 +151,13 @@ namespace Tenhou.Models
             {124, "5z"}, {125, "5z"}, {126, "5z"}, {127, "5z"}, 
             {128, "6z"}, {129, "6z"}, {130, "6z"}, {131, "6z"}, 
             {132, "7z"}, {133, "7z"}, {134, "7z"}, {135, "7z"}
+        };
+
+        private static int[] map2 = new int[TotalCount] {
+            1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9,
+            11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19,
+            21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 25, 26, 26, 26, 26, 27, 27, 27, 27, 28, 28, 28, 28, 29, 29, 29, 29,
+            31, 31, 31, 31, 32, 32, 32, 32, 33, 33, 33, 33, 34, 34, 34, 34, 35, 35, 35, 35, 36, 36, 36, 36, 37, 37, 37, 37
         };
     }
 }
