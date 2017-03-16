@@ -20,7 +20,7 @@ namespace Tenhou
 
         static void Init()
         {
-            client = new TenhouClient("AIxile");
+            client = new TenhouClient("ID497C2FD2-NTaW5Ed3");
 
             gameEnd.Reset();
 

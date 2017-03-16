@@ -239,8 +239,6 @@ namespace Tenhou
             else if (reader.Name == "GO")
             {
                 client.Send("<GOK />");
-                NextReady();
-                gameData = new GameData();
             }
             else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
             {
@@ -263,6 +261,7 @@ namespace Tenhou
             }
             else if (reader.Name == "TAIKYOKU")
             {
+                NextReady();
                 string logID = reader["log"];
                 int oya = int.Parse(reader["oya"]);
                 SaveTenhouLog(logID, oya == 0 ? 0 : 4 - oya);
@@ -273,7 +272,6 @@ namespace Tenhou
             }
             else if (reader.Name == "SAIKAI")
             {
-                gameData = new GameData();
                 if (OnGameStart != null)
                 {
                     OnGameStart(true);
@@ -281,6 +279,7 @@ namespace Tenhou
             }
             else if (reader.Name == "INIT" || reader.Name == "REINIT")
             {
+                gameData = new GameData();
                 HandleInit(reader["seed"], reader["ten"], reader["oya"], reader["hai"]);
                 if (OnUnknownEvent != null)
                 {
@@ -351,6 +350,7 @@ namespace Tenhou
                         gameData.remainingTile--;
                         break;
                 }
+
                 foreach (int num in hai)
                 {
                     if (num != -1)
@@ -364,6 +364,12 @@ namespace Tenhou
                 }
 
                 currentPlayer.fuuro.Add(tiles);
+
+                // 如果加杠则移除原来的碰
+                if (tiles.type == FuuroType.kakan)
+                {
+                    currentPlayer.fuuro.RemoveAll(g => g.type == FuuroType.pon && g.All(t => t.GenaralId == tiles[0].GenaralId));
+                }
 
                 if (currentPlayer == player)
                 {
@@ -573,7 +579,7 @@ namespace Tenhou
 	        hai0 = (m & 65280) >> 8;
 	        if (kui == 0) 
 	        {
-		        hai0 = (hai0 & 3 ^ -1) + 3;
+		        hai0 = (hai0 & (3 ^ -1)) + 3;
 	        }
 	        var __reg14 = hai0 / 4 * 4;
 	        var __reg15 = new List<int> {__reg14, __reg14, __reg14};

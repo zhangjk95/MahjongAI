@@ -72,6 +72,8 @@ namespace Tenhou
             EvalResult currentEvalResult = eval13();
             player.hand.Add(tile);
             int distance = calcDistance();
+            Trace.WriteLine("Distance: " + currentEvalResult.Distance);
+            Trace.WriteLine(string.Format("Option: pass, ePromotionCount: {1}, ePoint: {2}", currentEvalResult.ePromotionCount[0], currentEvalResult.ePoint));
             if (distance == -1 && !currentEvalResult.Furiten)
             {
                 client.Ron();
@@ -132,6 +134,8 @@ namespace Tenhou
                     player.fuuro.Remove(candidate);
                     player.hand.AddRange(candidate);
                 }
+
+                Trace.WriteLine(string.Format("Result: {0}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass"));
 
                 if (bestResult.Item1 != null)
                 {

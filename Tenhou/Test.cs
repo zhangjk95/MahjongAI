@@ -42,5 +42,13 @@ namespace Tenhou
             Console.WriteLine(point);
             Console.ReadKey();
         }
+
+        static void test3()
+        {
+            int type, hai0, hai1, hai2, hai3;
+            new TenhouClient("").decodeM(21504, out type, out hai0, out hai1, out hai2, out hai3);
+            Console.WriteLine("{0}, {1}, {2}, {3}, {4}", type, hai0, hai1, hai2, hai3);
+            Console.ReadKey();
+        }
     }
 }
