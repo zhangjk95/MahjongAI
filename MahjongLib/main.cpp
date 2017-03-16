@@ -27,7 +27,7 @@ void handleSyanten() {
 	cin >> fuurosuu;
 	syanten.set_fuurosuu(fuurosuu);
 
-	int res = syanten.AnySyanten() - fuurosuu * 2;
+	int res = syanten.AnySyanten();
 	cout << res << endl;
 }
 

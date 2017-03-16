@@ -126,8 +126,10 @@ int Syanten::NormalSyanten()
 
 int Syanten::AnySyanten() {
 	int res = NormalSyanten();
-	res = min(res, TiitoituSyanten());
-	res = min(res, KokusiSyanten());
+	if (fuurosuu == 0) {
+		res = min(res, TiitoituSyanten());
+		res = min(res, KokusiSyanten());
+	}
 	return res;
 }
 
@@ -176,5 +178,5 @@ int Syanten::checkNormalSyanten()
 	while (ptm + ptt > 4 - fuurosuu && ptt > 0) ptt--;
 	while (ptm + ptt > 4 - fuurosuu) ptm--;
 	
-	return 8-ptm*2-ptt;
+	return 8-ptm*2-ptt - fuurosuu * 2;
 }
