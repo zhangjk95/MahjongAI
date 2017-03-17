@@ -28,6 +28,13 @@ namespace Tenhou.Models
     class FuuroGroup : List<Tile>
     {
         public FuuroType type;
+
+        public FuuroGroup(): base() { }
+
+        public FuuroGroup(FuuroType type): base()
+        {
+            this.type = type;
+        }
     }
 
     enum FuuroType

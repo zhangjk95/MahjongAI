@@ -18,14 +18,14 @@ namespace Tenhou
             client.gameData.players[3].direction = Direction.S;
             client.gameData.players[0].direction = Direction.W;
             client.gameData.players[1].direction = Direction.N;
-            client.gameData.dora = new Dora() { new Tile(36) };
+            client.gameData.dora = new Dora() { new Tile(48), new Tile(116), new Tile(96) };
             client.player.hand = new Hand() {
-                new Tile(0), new Tile(8), new Tile(32), new Tile(40),
-                new Tile(48), new Tile(52), new Tile(56), new Tile(76),
-                new Tile(80), new Tile(92), new Tile(100), new Tile(124),
-                new Tile(125), new Tile(128)
+                new Tile(0),
+                new Tile(1), new Tile(28), new Tile(32), new Tile(33),
+                new Tile(77), new Tile(81), new Tile(85), new Tile(89),
+                new Tile(93), new Tile(97)
             };
-            client.player.fuuro = new Fuuro() { };
+            client.player.fuuro = new Fuuro() { new FuuroGroup(FuuroType.ankan) { new Tile(64), new Tile(65), new Tile(66), new Tile(67) } };
             var ai = new AIController(client);
             ai.chooseDiscardForAtk();
         }
