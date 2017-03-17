@@ -35,6 +35,8 @@ namespace Tenhou
             client.OnGameEnd += OnGameEnd;
             client.OnLogin += OnLogin;
             client.OnClose += OnClose;
+            client.OnNaki += OnNaki;
+            client.OnReach += OnReach;
             client.OnUnknownEvent += OnUnknownEvent;
             isRunning = true;
         }
@@ -74,6 +76,16 @@ namespace Tenhou
         protected virtual void OnDiscard(Player player, Tile tile)
         {
             
+        }
+
+        protected virtual void OnReach(Player player)
+        {
+
+        }
+
+        protected virtual void OnNaki(Player player, FuuroGroup fuuro)
+        {
+
         }
 
         protected virtual void OnGameStart(bool continued)

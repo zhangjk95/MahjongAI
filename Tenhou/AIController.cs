@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tenhou.Models;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Tenhou
 {
@@ -72,8 +73,7 @@ namespace Tenhou
             EvalResult currentEvalResult = eval13();
             player.hand.Add(tile);
             int distance = calcDistance();
-            Trace.WriteLine("Distance: " + currentEvalResult.Distance);
-            Trace.WriteLine(string.Format("Option: pass, ePromotionCount: {1}, ePoint: {2}", currentEvalResult.ePromotionCount[0], currentEvalResult.ePoint));
+            player.hand.Remove(tile);
             if (distance == -1 && !currentEvalResult.Furiten)
             {
                 client.Ron();
@@ -84,6 +84,10 @@ namespace Tenhou
             }
             else
             {
+                Trace.WriteLine("Distance: " + currentEvalResult.Distance);
+                Trace.WriteLine(string.Format("Option: pass, ePromotionCount: {0}, ePoint: {1}", currentEvalResult.ePromotionCount[0], currentEvalResult.ePoint));
+                player.hand.Add(tile);
+
                 List<FuuroGroup> candidates = new List<FuuroGroup>()
                 {
                     tryGetFuuroGroup(FuuroType.pon, new[] { Tuple.Create(tile.GenaralId, 2) }, tile),
@@ -135,6 +139,7 @@ namespace Tenhou
                     player.hand.AddRange(candidate);
                 }
 
+                player.hand.Remove(tile);
                 Trace.WriteLine(string.Format("Result: {0}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass"));
 
                 if (bestResult.Item1 != null)
@@ -143,10 +148,12 @@ namespace Tenhou
                     {
                         case FuuroType.chii:
                             client.Chii(bestResult.Item1[0], bestResult.Item1[1]);
+                            Thread.Sleep(1000); // 连续操作太快可能会导致服务器出问题
                             client.Discard(bestResult.Item2);
                             break;
                         case FuuroType.pon:
                             client.Pon(bestResult.Item1[0], bestResult.Item1[1]);
+                            Thread.Sleep(1000); // 连续操作太快可能会导致服务器出问题
                             client.Discard(bestResult.Item2);
                             break;
                         case FuuroType.minkan:
@@ -159,7 +166,6 @@ namespace Tenhou
                     client.Pass();
                 }
             }
-            player.hand.Remove(tile);
         }
 
         private bool shouldReach(Tile discardTile)

@@ -39,11 +39,21 @@ namespace Tenhou
 
         protected override void OnDiscard(Player player, Tile tile)
         {
+            Trace.WriteLine(string.Format("player({0}) discard {1}", player.id, tile.Name));
             if (player.id == 0)
             {
-                Trace.WriteLine(string.Format("discard {0}", tile.Name));
                 Trace.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name) + " | " + client.player.fuuro.Tiles.ToString(" ", t => t.Name));
             }
+        }
+
+        protected override void OnReach(Player player)
+        {
+            Trace.WriteLine(string.Format("player({0}) reach", player.id));
+        }
+
+        protected override void OnNaki(Player player, FuuroGroup fuuro)
+        {
+            Trace.WriteLine(string.Format("player({0}) {1}: {2}", player.id, fuuro.type.ToString(), fuuro.ToString(" ", t => t.Name)));
         }
 
         protected override void OnGameStart(bool continued)

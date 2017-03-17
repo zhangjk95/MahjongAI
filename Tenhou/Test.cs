@@ -18,13 +18,14 @@ namespace Tenhou
             client.gameData.players[3].direction = Direction.S;
             client.gameData.players[0].direction = Direction.W;
             client.gameData.players[1].direction = Direction.N;
-            client.gameData.dora = new Dora() { new Tile(81) };
+            client.gameData.dora = new Dora() { new Tile(36) };
             client.player.hand = new Hand() {
-                new Tile(4), new Tile(5), new Tile(48), new Tile(49),
-                new Tile(53), new Tile(69), new Tile(81), new Tile(85),
-                new Tile(86), new Tile(120), new Tile(121)
+                new Tile(0), new Tile(8), new Tile(32), new Tile(40),
+                new Tile(48), new Tile(52), new Tile(56), new Tile(76),
+                new Tile(80), new Tile(92), new Tile(100), new Tile(124),
+                new Tile(125), new Tile(128)
             };
-            client.player.fuuro = new Fuuro() { new FuuroGroup() { new Tile(124), new Tile(125), new Tile(126) } };
+            client.player.fuuro = new Fuuro() { };
             var ai = new AIController(client);
             ai.chooseDiscardForAtk();
         }
@@ -45,9 +46,9 @@ namespace Tenhou
 
         static void test3()
         {
-            int type, hai0, hai1, hai2, hai3;
-            new TenhouClient("").decodeM(21504, out type, out hai0, out hai1, out hai2, out hai3);
-            Console.WriteLine("{0}, {1}, {2}, {3}, {4}", type, hai0, hai1, hai2, hai3);
+            int type, kui, hai0, hai1, hai2, hai3;
+            new TenhouClient("").decodeM(33039, out type, out kui, out hai0, out hai1, out hai2, out hai3);
+            Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}", type, kui, hai0, hai1, hai2, hai3);
             Console.ReadKey();
         }
     }
