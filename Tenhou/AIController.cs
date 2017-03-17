@@ -51,7 +51,7 @@ namespace Tenhou
                     {
                         client.Kakan(discardTile);
                     }
-                    else if (shouldReach(discardTile))
+                    else if (shouldReach(discardTile, evalResult))
                     {
                         client.Reach(discardTile);
                         client.Discard(discardTile);
@@ -168,16 +168,17 @@ namespace Tenhou
             }
         }
 
-        private bool shouldReach(Tile discardTile)
+        private bool shouldReach(Tile discardTile, EvalResult evalResult)
         {
             player.hand.Remove(discardTile);
             player.graveyard.Add(discardTile);
-            EvalResult evalResult = eval13(1, false);
+            EvalResult evalResultWithoutReach = eval13(1, false);
             player.graveyard.Remove(discardTile);
             player.hand.Add(discardTile);
 
-            return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4
-                && calcDistance() == 0 && (evalResult.ePoint < 7700 || gameData.players.Count(p => p.reached) >= 2); // 期望得点<7700 或 立直人数 >=2
+            return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
+                && (evalResultWithoutReach.ePoint < 7700 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<7700 或 立直人数 >=2
+                && evalResult.ePromotionCount[0] > 0; // 没有空听
         }
 
         private bool shouldAnKan(Tile tile)
