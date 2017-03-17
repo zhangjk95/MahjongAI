@@ -488,7 +488,7 @@ namespace Tenhou
 
             if (kui != 0) // 从别人处拿到的牌
             {
-                var takenTile = new Tile(hai[4 - kui]);
+                var takenTile = new Tile(hai[3 - kui]);
                 takenTile.IsTakenAway = true;
                 var fromPlayer = gameData.players[(kui + currentPlayer.id) % 4];
                 if (!fromPlayer.graveyard.Exists(t => t.Id == takenTile.Id))
