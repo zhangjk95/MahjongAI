@@ -247,10 +247,7 @@ namespace Tenhou
                     else
                     {
                         var result = evalResults[tile.Name] = eval13(depth);
-                        if (doraValue(tile) > 0)
-                        {
-                            result.ePromotionCount[0] -= 1; // 如果这张牌是dora，打掉的话视为进张数少1
-                        }
+                        result.DiscardedDoraCount = doraValue(tile);
                         if (depth == -1)
                         {
                             Trace.WriteLine(string.Format("Option: discard {0}, ePromotionCount: {1}, ePoint: {2}", tile.Name, result.ePromotionCount[0], result.ePoint));
@@ -405,7 +402,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if (x.ePromotionCount.Count > 0 && (res = x.ePromotionCount[0].CompareTo(y.ePromotionCount[0])) != 0) // 进张数
+                else if (x.ePromotionCount.Count > 0 && (res = (x.ePromotionCount[0] - (x.DiscardedDoraCount.CompareTo(y.DiscardedDoraCount) > 0 ? 1 : 0)).CompareTo(y.ePromotionCount[0])) != 0) // 进张数（如果打掉的牌是dora，打掉的话视为进张数少1）
                 {
                     return res;
                 }
