@@ -154,7 +154,7 @@ namespace Tenhou
 
         public void Ankan(Tile tile)
         {
-            client.Send(string.Format("<N type=\"4\" hai=\"{0}\" />", tile));
+            client.Send(string.Format("<N type=\"4\" hai=\"{0}\" />", tile.Id / 4 * 4 + 2));
         }
 
         public void Kakan(Tile tile)

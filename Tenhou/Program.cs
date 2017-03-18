@@ -22,7 +22,7 @@ namespace Tenhou
         {
             // AIxile.1: ID74C257FD-758dmYBe
             // AIxile.2: ID497C2FD2-NTaW5Ed3
-            client = new TenhouClient("AIxile.t");
+            client = new TenhouClient("ID497C2FD2-NTaW5Ed3");
 
             gameEnd.Reset();
 

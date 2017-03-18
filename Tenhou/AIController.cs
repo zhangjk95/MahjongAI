@@ -86,9 +86,12 @@ namespace Tenhou
 
                 List<FuuroGroup> candidates = new List<FuuroGroup>()
                 {
-                    tryGetFuuroGroup(FuuroType.pon, new[] { Tuple.Create(tile.GenaralId, 2) }, tile),
-                    tryGetFuuroGroup(FuuroType.minkan, new[] { Tuple.Create(tile.GenaralId, 3) }, tile)
+                    tryGetFuuroGroup(FuuroType.pon, new[] { Tuple.Create(tile.GenaralId, 2) }, tile)
                 };
+                if (gameData.remainingTile > 0)
+                {
+                    candidates.Add(tryGetFuuroGroup(FuuroType.minkan, new[] { Tuple.Create(tile.GenaralId, 3) }, tile));
+                }
                 if (fromPlayer.id == 3 && tile.Type != "z")
                 {
                     candidates.AddRange(new List<FuuroGroup>()
@@ -107,6 +110,7 @@ namespace Tenhou
                         continue;
                     }
 
+                    Trace.WriteLine(string.Format("Option: {0}", candidate.type.ToString()));
                     player.hand.RemoveRange(candidate);
                     player.fuuro.Add(candidate);
                     Tile discardTile = null;
@@ -136,7 +140,7 @@ namespace Tenhou
                 }
 
                 player.hand.Remove(tile);
-                Trace.WriteLine(string.Format("Result: {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass", bestResult.Item3.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item3.ePoint));
+                Trace.WriteLine(string.Format("BestResult: {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass", bestResult.Item3.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item3.ePoint));
 
                 if (bestResult.Item1 != null)
                 {
@@ -180,7 +184,7 @@ namespace Tenhou
         private bool shouldAnKan(Tile tile)
         {
             FuuroGroup group = tryGetFuuroGroup(FuuroType.ankan, new[] { Tuple.Create(tile.GenaralId, 4) });
-            if (group == null)
+            if (group == null || gameData.remainingTile <= 0)
             {
                 return false;
             }
@@ -204,14 +208,14 @@ namespace Tenhou
 
         private bool shouldKaKan(Tile tile)
         {
-            return player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GenaralId == tile.GenaralId));
+            return gameData.remainingTile > 0 && player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GenaralId == tile.GenaralId));
         }
 
         private bool shouldNaki(EvalResult resultBefore, EvalResult resultAfter)
         {
             return resultBefore.Distance >= 3 && hasYakuhai()
-                || resultBefore.Distance <= 2 && (resultBefore.ePoint - resultAfter.ePoint) <= 0
-                || resultBefore.Distance <= 2 && ((resultBefore.ePoint - resultAfter.ePoint) < resultBefore.ePoint / 2 || (resultBefore.ePoint - resultAfter.ePoint) < 2000)
+                || resultBefore.Distance <= 2 && (resultBefore.ePoint - resultAfter.ePoint) <= 0 && resultAfter.ePoint > 0
+                || resultBefore.Distance <= 2 && ((resultBefore.ePoint - resultAfter.ePoint) < resultBefore.ePoint * 3 / 5 || (resultBefore.ePoint - resultAfter.ePoint) < 2000) && resultAfter.ePoint > 0
                     && resultBefore.Distance > resultAfter.Distance && (resultBefore.ePromotionCount[1] <= resultAfter.ePromotionCount[0] || resultBefore.VisibleFuuroCount > 0);
         }
 
@@ -282,7 +286,7 @@ namespace Tenhou
 
             if (depth == -1)
             {
-                Trace.WriteLine(string.Format("Result: discard {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1.Name, bestResult.Item2.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item2.ePoint));
+                Trace.WriteLine(string.Format("BestResult: discard {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1.Name, bestResult.Item2.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item2.ePoint));
             }
             evalResult = bestResult.Item2;
             return bestResult.Item1;
