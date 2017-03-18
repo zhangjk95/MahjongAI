@@ -17,8 +17,19 @@ namespace Tenhou
 
         public SocketClient(string server, int port)
         {
-            client = new TcpClient(server, port);
-            stream = client.GetStream();
+            int retries = 5;
+            while (retries-- > 0)
+            {
+                try
+                {
+                    client = new TcpClient(server, port);
+                    stream = client.GetStream();
+                    return;
+                }
+                catch { }
+            }
+
+            throw new SocketException();
         }
 
         ~SocketClient()

@@ -12,8 +12,8 @@ namespace Tenhou
 {
     class MahjongHelper
     {
-        private static List<string> programPaths = new List<string> { "MahjongLib.exe", @"..\..\..\Release\MahjongLib.exe" };
-        private static List<string> workingDirectories = new List<string> { ".", @"..\..\..\MahjongLib" };
+        private static List<string> programPaths = new List<string> { "MahjongLib.exe", @"..\..\..\Release\MahjongLib.exe", "../source/MahjongLib/MahjongLib.exe" };
+        private static List<string> workingDirectories = new List<string> { ".", @"..\..\..\MahjongLib", "../source/MahjongLib" };
         private static List<string> resourceFiles = new List<string> { "syanten.dat" };
 
         private static List<MahjongHelper> instances = null;

@@ -15,6 +15,7 @@
 #include <math.h>
 #include <string>
 #include <iostream>
+#include <cstring>
 using namespace std;
 
 #pragma warning(disable: 4800)
