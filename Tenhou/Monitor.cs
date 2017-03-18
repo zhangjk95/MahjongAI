@@ -29,12 +29,13 @@ namespace Tenhou
         protected override void OnDraw(Tile tile)
         {
             Trace.WriteLine(string.Format("draw {0}", tile.Name));
-            Trace.WriteLine(client.player.hand.ToString(" ", t => t.Name) + " | " + client.player.fuuro.Tiles.ToString(" ", t => t.Name));
+            showCurrentState();
         }
 
         protected override void OnWait(Tile tile, Player fromPlayer)
         {
             Trace.WriteLine(string.Format("wait {0} from {1}", tile.Name, fromPlayer.id));
+            showCurrentState();
         }
 
         protected override void OnDiscard(Player player, Tile tile)
@@ -42,7 +43,7 @@ namespace Tenhou
             Trace.WriteLine(string.Format("player({0}) discard {1}", player.id, tile.Name));
             if (player.id == 0)
             {
-                Trace.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name) + " | " + client.player.fuuro.Tiles.ToString(" ", t => t.Name));
+                showCurrentState();
             }
         }
 
@@ -76,6 +77,11 @@ namespace Tenhou
         protected override void OnUnknownEvent(string str)
         {
             Trace.WriteLine(str);
+        }
+
+        private void showCurrentState()
+        {
+            Trace.WriteLine(client.player.hand.ToString(" ", (handTile) => handTile.Name) + " | " + client.player.fuuro.Tiles.ToString(" ", t => t.Name));
         }
     }
 }

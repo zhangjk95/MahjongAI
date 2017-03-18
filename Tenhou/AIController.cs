@@ -72,20 +72,16 @@ namespace Tenhou
         {
             EvalResult currentEvalResult = eval13();
             player.hand.Add(tile);
-            int distance = calcDistance();
+            EvalResult currentEvalResult14 = eval14(tile, 1);
             player.hand.Remove(tile);
-            if (distance == -1 && !currentEvalResult.Furiten)
+            if (currentEvalResult14.Distance == -1 && !currentEvalResult.Furiten && currentEvalResult14.ePoint > 0)
             {
                 client.Ron();
-            }
-            else if (!hasYakuhai())
-            {
-                client.Pass();
             }
             else
             {
                 Trace.WriteLine("Distance: " + currentEvalResult.Distance);
-                Trace.WriteLine(string.Format("Option: pass, ePromotionCount: {0}, ePoint: {1}", currentEvalResult.ePromotionCount[0], currentEvalResult.ePoint));
+                Trace.WriteLine(string.Format("Option: pass, ePromotionCount: [{0}], ePoint: {1}", currentEvalResult.ePromotionCount.ToString(", ", c => c.ToString("F0")), currentEvalResult.ePoint));
                 player.hand.Add(tile);
 
                 List<FuuroGroup> candidates = new List<FuuroGroup>()
@@ -131,7 +127,7 @@ namespace Tenhou
                     {
                         tmpResult = eval13();
                     }
-                    if (evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
+                    if (tmpResult != null && shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
                     {
                         bestResult = Tuple.Create(candidate, discardTile, tmpResult);
                     }
@@ -140,7 +136,7 @@ namespace Tenhou
                 }
 
                 player.hand.Remove(tile);
-                Trace.WriteLine(string.Format("Result: {0}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass"));
+                Trace.WriteLine(string.Format("Result: {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass", bestResult.Item3.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item3.ePoint));
 
                 if (bestResult.Item1 != null)
                 {
@@ -211,6 +207,14 @@ namespace Tenhou
             return player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GenaralId == tile.GenaralId));
         }
 
+        private bool shouldNaki(EvalResult resultBefore, EvalResult resultAfter)
+        {
+            return resultBefore.Distance >= 3 && hasYakuhai()
+                || resultBefore.Distance <= 2 && (resultBefore.ePoint - resultAfter.ePoint) <= 0
+                || resultBefore.Distance <= 2 && ((resultBefore.ePoint - resultAfter.ePoint) < resultBefore.ePoint / 2 || (resultBefore.ePoint - resultAfter.ePoint) < 2000)
+                    && resultBefore.Distance > resultAfter.Distance && (resultBefore.ePromotionCount[1] <= resultAfter.ePromotionCount[0] || resultBefore.VisibleFuuroCount > 0);
+        }
+
         private bool shouldDef(EvalResult evalResult)
         {
             return false;
@@ -251,7 +255,7 @@ namespace Tenhou
                         result.DiscardedDoraCount = doraValue(tile);
                         if (depth == -1)
                         {
-                            Trace.WriteLine(string.Format("Option: discard {0}, ePromotionCount: {1}, ePoint: {2}", tile.Name, result.ePromotionCount[0], result.ePoint));
+                            Trace.WriteLine(string.Format("Option: discard {0}, ePromotionCount: [{1}], ePoint: {2}", tile.Name, result.ePromotionCount.ToString(", ", c => c.ToString("F0")), result.ePoint));
                         }
                     }
                     player.hand.Add(tile);
@@ -278,7 +282,7 @@ namespace Tenhou
 
             if (depth == -1)
             {
-                Trace.WriteLine("Result: discard " + bestResult.Item1.Name);
+                Trace.WriteLine(string.Format("Result: discard {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1.Name, bestResult.Item2.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item2.ePoint));
             }
             evalResult = bestResult.Item2;
             return bestResult.Item1;
@@ -301,7 +305,7 @@ namespace Tenhou
             }
             res.DoraInFuuroCount = player.fuuro.Tiles.Sum(t => doraValue(t));
             res.DoraCount = player.hand.Sum(t => doraValue(t)) + res.DoraInFuuroCount;
-            res.FuuroCount = player.fuuro.VisibleCount;
+            res.VisibleFuuroCount = player.fuuro.VisibleCount;
             res.KanCount = player.fuuro.Count(f => f.type == FuuroType.ankan || f.type == FuuroType.kakan || f.type == FuuroType.minkan);
             var promotionTiles = new List<Tuple<Tile, EvalResult>>();
             var evalResults = new Dictionary<string, EvalResult>();
@@ -332,16 +336,24 @@ namespace Tenhou
                     }
                 }
             }
+
+            res.Furiten = promotionTiles.Exists(tuple => player.graveyard.Exists(t => t.GenaralId == tuple.Item1.GenaralId));
+
+            if (res.Distance < depth) // 在可以算出得点的情况下
+            {
+                promotionTiles.RemoveAll(tuple => tuple.Item2.ePoint <= 0); // 把得点为0的情况去掉（不算进张）
+            }
+            
             res.ePromotionCount = new List<double>() { promotionTiles.Count };
+            for (var i = 0; i < Math.Min(depth - 1, res.Distance); i++)
+            {
+                res.ePromotionCount.Add(promotionTiles.Count > 0 ? promotionTiles.Sum(tuple => tuple.Item2.ePromotionCount[i]) / promotionTiles.Count : 0);
+            }
             if (promotionTiles.Count > 0)
             {
                 res.ePoint = promotionTiles.Sum(tuple => tuple.Item2.ePoint) / promotionTiles.Count;
-                for (var i = 0; i < promotionTiles[0].Item2.ePromotionCount.Count; i++)
-                {
-                    res.ePromotionCount.Add(promotionTiles.Sum(tuple => tuple.Item2.ePromotionCount[i]) / promotionTiles.Count);
-                }
             }
-            res.Furiten = promotionTiles.Exists(tuple => player.graveyard.Exists(t => t.GenaralId == tuple.Item1.GenaralId));
+            
             return res;
         }
 
@@ -399,7 +411,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = (y.FuuroCount > 0).CompareTo(x.FuuroCount > 0)) != 0) // 是否门清
+                else if ((res = (y.VisibleFuuroCount > 0).CompareTo(x.VisibleFuuroCount > 0)) != 0) // 是否门清
                 {
                     return res;
                 }
