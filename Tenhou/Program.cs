@@ -7,6 +7,7 @@ using System.Threading;
 using Tenhou.Models;
 using System.Diagnostics;
 using System.IO;
+using System.Configuration;
 
 namespace Tenhou
 {
@@ -58,15 +59,29 @@ namespace Tenhou
 
         static Config GetConfig()
         {
-            return new Config()
-            {
-                // AIxile.1: ID74C257FD-758dmYBe
-                // AIxile.2: ID497C2FD2-NTaW5Ed3
-                Id = "AIxile.t",
-                Lobby = 0,
-                GameType = GameType.Match_EastSouth | GameType.Level_High,
-                Repeat = int.MaxValue
-            };
+            var config = new Config();
+
+            config.Id = ConfigurationManager.AppSettings["TenhouID"];
+
+            config.Lobby = int.Parse(ConfigurationManager.AppSettings["Lobby"]);
+
+            config.GameType = new GameType();
+            var gameType_Match = ConfigurationManager.AppSettings["GameType_Match"];
+            var matchName = Enum.GetNames(typeof(GameType)).FirstOrDefault(n => n == "Match_" + gameType_Match);
+            config.GameType |= matchName != null ? (GameType)Enum.Parse(typeof(GameType), matchName) : 0;
+
+            var gameType_Level = ConfigurationManager.AppSettings["GameType_Level"];
+            var levelName = Enum.GetNames(typeof(GameType)).FirstOrDefault(n => n == "Level_" + gameType_Level);
+            config.GameType |= levelName != null ? (GameType)Enum.Parse(typeof(GameType), levelName) : 0;
+
+            var gameType_Mode = ConfigurationManager.AppSettings["GameType_Mode"];
+            var modeName = Enum.GetNames(typeof(GameType)).FirstOrDefault(n => n == "Mode_" + gameType_Mode);
+            config.GameType |= modeName != null ? (GameType)Enum.Parse(typeof(GameType), modeName) : 0;
+
+            var repeat = ConfigurationManager.AppSettings["Repeat"];
+            config.Repeat = repeat == "INF" ? int.MaxValue : int.Parse(repeat);
+
+            return config;
         }
 
         static void Main(string[] args)
@@ -78,16 +93,19 @@ namespace Tenhou
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
             Config config = GetConfig();
+            Console.WriteLine(config.Id);
+            Console.WriteLine(config.Lobby);
+            Console.WriteLine(config.GameType);
+            Console.WriteLine(config.Repeat);
+            Console.ReadKey();
 
             new Thread(HandleInput).Start();
             
             while (running && config.Repeat-- > 0)
             {
-                //Start(config);
-                //gameEnd.WaitOne();
-                Console.WriteLine("test");
-                Thread.Sleep(10000);
-                //client.Close();
+                Start(config);
+                gameEnd.WaitOne();
+                client.Close();
             }
         }
     }
