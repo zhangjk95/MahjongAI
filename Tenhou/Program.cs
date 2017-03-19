@@ -41,18 +41,16 @@ namespace Tenhou
             client.Login();
         }
 
-        static void CheckKeyPress()
+        static void HandleInput()
         {
             while (running)
             {
-                ConsoleKeyInfo key = Console.ReadKey(true);
-                switch (key.Key)
+                string input = Console.ReadLine();
+                switch (input.ToLower())
                 {
-                    case ConsoleKey.Q:
+                    case "q":
                         Console.WriteLine("Quiting...");
                         running = false;
-                        break;
-                    default:
                         break;
                 }
             }
@@ -81,7 +79,7 @@ namespace Tenhou
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
             Config config = GetConfig();
 
-            new Thread(CheckKeyPress).Start();
+            new Thread(HandleInput).Start();
             
             while (running && config.Repeat-- > 0)
             {
