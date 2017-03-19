@@ -93,11 +93,6 @@ namespace Tenhou
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
             Config config = GetConfig();
-            Console.WriteLine(config.Id);
-            Console.WriteLine(config.Lobby);
-            Console.WriteLine(config.GameType);
-            Console.WriteLine(config.Repeat);
-            Console.ReadKey();
 
             new Thread(HandleInput).Start();
             
