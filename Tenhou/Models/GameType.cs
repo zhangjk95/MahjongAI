@@ -10,10 +10,10 @@ namespace Tenhou.Models
     enum GameType
     {
         Match_East = 1,
-        Match_South = 9,
+        Match_EastSouth = 9,
         Mode_Fast = 64,
         Level_High = 128,
-        Level_Toku = 32,
-        Level_Houo = 160
+        Level_VeryHigh = 32,
+        Level_Phoenix = 160
     }
 }

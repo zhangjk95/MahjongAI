@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tenhou", "Tenhou\Tenhou.csproj", "{C64EAF3D-40E2-40BB-B02B-49C69F848572}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E43247C1-C6AB-44BD-A163-528E827ADC89} = {E43247C1-C6AB-44BD-A163-528E827ADC89}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MahjongLib", "MahjongLib\MahjongLib.vcxproj", "{E43247C1-C6AB-44BD-A163-528E827ADC89}"
 EndProject

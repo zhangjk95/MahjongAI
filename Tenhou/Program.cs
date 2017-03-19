@@ -18,18 +18,16 @@ namespace Tenhou
         static AutoResetEvent gameEnd = new AutoResetEvent(false);
         static bool running = true;
 
-        static void Init()
+        static void Start(Config config)
         {
-            // AIxile.1: ID74C257FD-758dmYBe
-            // AIxile.2: ID497C2FD2-NTaW5Ed3
-            client = new TenhouClient("ID497C2FD2-NTaW5Ed3");
+            client = new TenhouClient(config.Id);
 
             gameEnd.Reset();
 
             client.OnLogin += () =>
             {
-                client.EnterLobby(0);
-                client.Join(GameType.Match_South | GameType.Level_High);
+                client.EnterLobby(config.Lobby);
+                client.Join(config.GameType);
             };
             client.OnGameEnd += () => { gameEnd.Set(); };
             client.OnClose += () => { gameEnd.Set(); };
@@ -45,18 +43,32 @@ namespace Tenhou
 
         static void CheckKeyPress()
         {
-            if (Console.KeyAvailable)
+            while (running)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 switch (key.Key)
                 {
                     case ConsoleKey.Q:
+                        Console.WriteLine("Quiting...");
                         running = false;
                         break;
                     default:
                         break;
                 }
             }
+        }
+
+        static Config GetConfig()
+        {
+            return new Config()
+            {
+                // AIxile.1: ID74C257FD-758dmYBe
+                // AIxile.2: ID497C2FD2-NTaW5Ed3
+                Id = "AIxile.t",
+                Lobby = 0,
+                GameType = GameType.Match_EastSouth | GameType.Level_High,
+                Repeat = int.MaxValue
+            };
         }
 
         static void Main(string[] args)
@@ -67,14 +79,17 @@ namespace Tenhou
             StreamWriter writer = File.CreateText("log.txt");
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
+            Config config = GetConfig();
 
+            new Thread(CheckKeyPress).Start();
             
-            while (running)
+            while (running && config.Repeat-- > 0)
             {
-                Init();
-                gameEnd.WaitOne();
-                client.Close();
-                CheckKeyPress();
+                //Start(config);
+                //gameEnd.WaitOne();
+                Console.WriteLine("test");
+                Thread.Sleep(10000);
+                //client.Close();
             }
         }
     }
