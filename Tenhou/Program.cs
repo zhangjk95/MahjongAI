@@ -29,10 +29,7 @@ namespace Tenhou
             client.OnLogin += () =>
             {
                 client.EnterLobby(0);
-                client.Join(GameType.South);
-                //client.Join(GameType.South_fast);
-                //client.Join(GameType.East);
-                //client.Join(GameType.East_fast);
+                client.Join(GameType.Match_South | GameType.Level_High);
             };
             client.OnGameEnd += () => { gameEnd.Set(); };
             client.OnClose += () => { gameEnd.Set(); };

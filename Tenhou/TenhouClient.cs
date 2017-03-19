@@ -91,23 +91,7 @@ namespace Tenhou
 
         public void Join(GameType type)
         {
-            string typeStr = null;
-            switch (type)
-            {
-                case GameType.East:
-                    typeStr = lobby.ToString() + ",1";
-                    break;
-                case GameType.East_fast:
-                    typeStr = lobby.ToString() + ",65";
-                    break;
-                case GameType.South:
-                    typeStr = lobby.ToString() + ",9";
-                    break;
-                case GameType.South_fast:
-                    typeStr = lobby.ToString() + ",73";
-                    break;
-            }
-            client.Send(string.Format("<JOIN t=\"{0}\" />", typeStr));
+            client.Send(string.Format("<JOIN t=\"{0},{1}\" />", lobby, (int)type));
         }
 
         public void EnterLobby(int lobby)
