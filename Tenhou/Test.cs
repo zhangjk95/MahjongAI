@@ -47,7 +47,7 @@ namespace Tenhou
         static void test3()
         {
             int type, kui, hai0, hai1, hai2, hai3;
-            new TenhouClient("").decodeM(33039, out type, out kui, out hai0, out hai1, out hai2, out hai3);
+            new TenhouClient("").decodeMeld(33039, out type, out kui, out hai0, out hai1, out hai2, out hai3);
             Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}", type, kui, hai0, hai1, hai2, hai3);
             Console.ReadKey();
         }

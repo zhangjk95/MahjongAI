@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tenhou.Models;
 
 namespace Tenhou
 {
@@ -26,6 +27,16 @@ namespace Tenhou
                 res *= selector(item);
             }
             return res;
+        }
+
+        public static int Count(this IEnumerable<Tile> tileList, Tile tile)
+        {
+            return tileList.Count(t => t.GenaralId == tile.GenaralId);
+        }
+
+        public static bool Exists(this IEnumerable<Tile> tileList, Tile tile)
+        {
+            return tileList.Any(t => t.GenaralId == tile.GenaralId);
         }
     }
 }

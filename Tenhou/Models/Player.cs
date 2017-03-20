@@ -17,5 +17,11 @@ namespace Tenhou.Models
         public Hand hand = new Hand();
         public Graveyard graveyard = new Graveyard();
         public Fuuro fuuro = new Fuuro();
+        public SafeTiles safeTiles;
+
+        public Player()
+        {
+            safeTiles = new SafeTiles(this);
+        }
     }
 }

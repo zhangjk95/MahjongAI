@@ -148,17 +148,21 @@ namespace Tenhou
                     {
                         case FuuroType.chii:
                             client.Chii(bestResult.Item1[0], bestResult.Item1[1]);
-                            Thread.Sleep(1000); // 连续操作太快可能会导致服务器出问题
-                            client.Discard(bestResult.Item2);
                             break;
                         case FuuroType.pon:
                             client.Pon(bestResult.Item1[0], bestResult.Item1[1]);
-                            Thread.Sleep(1000); // 连续操作太快可能会导致服务器出问题
-                            client.Discard(bestResult.Item2);
                             break;
                         case FuuroType.minkan:
                             client.Minkan();
                             break;
+                    }
+                    if (bestResult.Item1.type == FuuroType.chii || bestResult.Item1.type == FuuroType.pon)
+                    {
+                        Thread.Sleep(5000); // 等待其他玩家响应
+                        if (player.hand.Count + player.fuuro.Count * 3 == 14) // 等待之后如果手牌数多出来了表示鸣牌成功
+                        {
+                            client.Discard(bestResult.Item2);
+                        }
                     }
                 }
                 else

@@ -49,6 +49,7 @@
     <Compile Include="MahjongHelper.cs" />
     <Compile Include="Models\Direction.cs" />
     <Compile Include="Models\EvalResult.cs" />
+    <Compile Include="Models\SafeTiles.cs" />
     <Compile Include="ProgramController.cs" />
     <Compile Include="IEnumerableExtension.cs" />
     <Compile Include="Models\Dora.cs" />

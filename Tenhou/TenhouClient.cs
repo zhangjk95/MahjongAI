@@ -228,6 +228,13 @@ namespace Tenhou
             }
             else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
             {
+                if (reader.Name == "AGARI")
+                {
+                    if (gameData.lastTile != null)
+                    {
+                        gameData.lastTile.IsTakenAway = true;
+                    }
+                }
                 if (OnUnknownEvent != null)
                 {
                     OnUnknownEvent(str);
@@ -285,11 +292,20 @@ namespace Tenhou
             }
             else if ((match = new Regex(@"([DEFGdefg])(\d+)").Match(reader.Name)).Success)
             {
-                Player currentPlayer = gameData.players[match.Groups[1].Value.ToLower()[0] - 'd'];
+                var tag = match.Groups[1].Value;
+                Player currentPlayer = gameData.players[tag.ToLower()[0] - 'd'];
+                if (tag == tag.ToUpper()) // 大写表示手切
+                {
+                    currentPlayer.safeTiles.Clear();
+                }
                 Tile tile = new Tile(int.Parse(match.Groups[2].Value));
                 currentPlayer.graveyard.Add(tile);
                 gameData.lastTile = tile;
                 gameData.remainingTile--;
+                foreach (var p in gameData.players)
+                {
+                    p.safeTiles.Add(tile);
+                }
                 if (OnDiscard != null)
                 {
                     OnDiscard(currentPlayer, tile);
@@ -321,6 +337,7 @@ namespace Tenhou
             {
                 Player currentPlayer = gameData.players[int.Parse(reader["who"])];
                 currentPlayer.reached = true;
+                currentPlayer.safeTiles.Clear();
                 if (OnReach != null)
                 {
                     OnReach(currentPlayer);
@@ -434,7 +451,7 @@ namespace Tenhou
         {
             int type, kui;
             int[] hai = new int[4];
-            decodeM(m, out type, out kui, out hai[0], out hai[1], out hai[2], out hai[3]);
+            decodeMeld(m, out type, out kui, out hai[0], out hai[1], out hai[2], out hai[3]);
 
             FuuroGroup tiles = new FuuroGroup();
             switch (type)
@@ -536,7 +553,7 @@ namespace Tenhou
             return string.Format("<AUTH val=\"{0}\"/>", authval);
         }
 
-        public void decodeM(int m, out int type, out int kui, out int hai0, out int hai1, out int hai2, out int hai3)
+        public void decodeMeld(int m, out int type, out int kui, out int hai0, out int hai1, out int hai2, out int hai3)
         {
             hai0 = hai1 = hai2 = hai3 = -1;
             kui = m & 3;
