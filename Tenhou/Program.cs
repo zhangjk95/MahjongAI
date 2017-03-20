@@ -95,7 +95,7 @@ namespace Tenhou
             Config config = GetConfig();
 
             new Thread(HandleInput).Start();
-            
+
             while (running && config.Repeat-- > 0)
             {
                 Start(config);

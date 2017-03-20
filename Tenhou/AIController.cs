@@ -23,7 +23,7 @@ namespace Tenhou
         protected override void OnDraw(Tile tile)
         {
             int distance = calcDistance();
-            if (distance == -1)
+            if (distance == -1 && (player.fuuro.VisibleCount == 0 || calcPoint(tile, false) > 0))
             {
                 client.Tsumo();
             }
@@ -39,32 +39,7 @@ namespace Tenhou
                 }
             }
             else {
-                EvalResult evalResult;
-                Tile discardTile = chooseDiscardForAtk(out evalResult);
-                if (!shouldDef(evalResult))
-                {
-                    if (shouldAnKan(discardTile))
-                    {
-                        client.Ankan(discardTile);
-                    }
-                    else if (shouldKaKan(discardTile))
-                    {
-                        client.Kakan(discardTile);
-                    }
-                    else if (shouldReach(discardTile, evalResult))
-                    {
-                        client.Reach(discardTile);
-                        client.Discard(discardTile);
-                    }
-                    else {
-                        client.Discard(discardTile);
-                    }
-                }
-                else
-                {
-                    Tile newDiscardTile = chooseDiscardForDef();
-                    client.Discard(newDiscardTile);
-                }
+                decideMove();
             }
         }
 
@@ -156,20 +131,48 @@ namespace Tenhou
                             client.Minkan();
                             break;
                     }
-                    if (bestResult.Item1.type == FuuroType.chii || bestResult.Item1.type == FuuroType.pon)
-                    {
-                        Task.Delay(5000).Wait(); // 等待其他玩家响应
-                        Console.WriteLine(player.hand.Count + " " + player.fuuro.Count);
-                        if (player.hand.Count + player.fuuro.Count * 3 == 14) // 等待之后如果手牌数多出来了表示鸣牌成功
-                        {
-                            client.Discard(bestResult.Item2);
-                        }
-                    }
                 }
                 else
                 {
                     client.Pass();
                 }
+            }
+        }
+
+        protected override void OnNaki(Player currentPlayer, FuuroGroup fuuro)
+        {
+            if (currentPlayer == player && (fuuro.type == FuuroType.pon || fuuro.type == FuuroType.chii))
+            {
+                decideMove();
+            }
+        }
+
+        private void decideMove() {
+            EvalResult evalResult;
+            Tile discardTile = chooseDiscardForAtk(out evalResult);
+            if (!shouldDef(evalResult))
+            {
+                if (shouldAnKan(discardTile))
+                {
+                    client.Ankan(discardTile);
+                }
+                else if (shouldKaKan(discardTile))
+                {
+                    client.Kakan(discardTile);
+                }
+                else if (shouldReach(discardTile, evalResult))
+                {
+                    client.Reach(discardTile);
+                    client.Discard(discardTile);
+                }
+                else {
+                    client.Discard(discardTile);
+                }
+            }
+            else
+            {
+                Tile newDiscardTile = chooseDiscardForDef();
+                client.Discard(newDiscardTile);
             }
         }
 
