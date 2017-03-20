@@ -7,11 +7,11 @@ A simplified client for *Tenhou.net*(one of the most popular online mahjong serv
 
 **Requirements:** Visual Studio 2015
 
-1. Download source code
+1. Download source code.
 
 		git clone https://github.com/zhangjk95/Tenhou-Client.git
 		
-2. Copy `Tenhou\App.config.example` to `Tenhou\App.config` and edit it. (Instructions are included in the example)
+2. Copy `Tenhou\App.config.example` to `Tenhou\App.config` and edit it. (Instructions are included in the example.)
 3. Open the solution with Visual Studio 2015.
 4. Switch the Build Configuration to **Release**. (The program may be slow in Debug mode and exceed the time limit when making dicisions.)
 5. Build and Run!
@@ -22,9 +22,9 @@ After the game is ended, you can find the replay URLs in `Tenhou\bin\Debug\Tenho
 
 ### Docker 
 
-You can run this program in Docker on either Windows or Linux without any other Requirements.
+You can run this program in Docker on either Windows or Linux without any other requirements.
 
-1. Download source code
+1. Download source code.
 
 		git clone https://github.com/zhangjk95/Tenhou-Client.git
 		
@@ -32,7 +32,7 @@ You can run this program in Docker on either Windows or Linux without any other 
 
 		cd Tenhou-Client
 
-3. Copy `Tenhou/App.config.example` to `Tenhou/App.config` and edit it. (Instructions are included in the example)
+3. Copy `Tenhou/App.config.example` to `Tenhou/App.config` and edit it. (Instructions are included in the example.)
 
 		cp Tenhou/App.config.example Tenhou/App.config
 		vim Tenhou/App.config
