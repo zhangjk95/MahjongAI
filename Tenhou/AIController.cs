@@ -158,7 +158,7 @@ namespace Tenhou
                     }
                     if (bestResult.Item1.type == FuuroType.chii || bestResult.Item1.type == FuuroType.pon)
                     {
-                        Thread.Sleep(5000); // 等待其他玩家响应
+                        Task.Delay(5000).Wait(); // 等待其他玩家响应
                         Console.WriteLine(player.hand.Count + " " + player.fuuro.Count);
                         if (player.hand.Count + player.fuuro.Count * 3 == 14) // 等待之后如果手牌数多出来了表示鸣牌成功
                         {
