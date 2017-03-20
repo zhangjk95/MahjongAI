@@ -26,6 +26,11 @@ namespace Tenhou
             Trace.WriteLine("Client closed.");
         }
 
+        protected override void OnConnectionException()
+        {
+            Trace.WriteLine("Unexpectedly disconnected.");
+        }
+
         protected override void OnDraw(Tile tile)
         {
             Trace.WriteLine(string.Format("draw {0}", tile.Name));
@@ -34,7 +39,7 @@ namespace Tenhou
 
         protected override void OnWait(Tile tile, Player fromPlayer)
         {
-            Trace.WriteLine(string.Format("wait {0} from {1}", tile.Name, fromPlayer.id));
+            Trace.WriteLine(string.Format("wait {0} from player({1})", tile.Name, fromPlayer.id));
             showCurrentState();
         }
 

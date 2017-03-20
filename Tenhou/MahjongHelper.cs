@@ -46,7 +46,11 @@ namespace Tenhou
 
         ~MahjongHelper()
         {
-            process.Kill();
+            try
+            {
+                process.Kill();
+            }
+            catch { }
         }
 
         public static MahjongHelper getInstance()

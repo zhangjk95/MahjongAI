@@ -30,8 +30,19 @@ namespace Tenhou
                 client.EnterLobby(config.Lobby);
                 client.Join(config.GameType);
             };
-            client.OnGameEnd += () => { gameEnd.Set(); };
-            client.OnClose += () => { gameEnd.Set(); };
+            client.OnGameEnd += () => 
+            {
+                config.Repeat--;
+                gameEnd.Set();
+            };
+            client.OnConnectionException += () => 
+            {
+                if (config.Id.Length <= 8) // 如果没有天凤账号，无法断线重连
+                {
+                    config.Repeat--;
+                }
+                gameEnd.Set();
+            };
 
             monitor = new Monitor(client);
             monitor.Start();
@@ -44,7 +55,7 @@ namespace Tenhou
 
         static void HandleInput()
         {
-            while (running)
+            while (true)
             {
                 string input = Console.ReadLine();
                 switch (input.ToLower())
@@ -94,14 +105,17 @@ namespace Tenhou
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
             Config config = GetConfig();
 
-            new Thread(HandleInput).Start();
+            var handleInputThread = new Thread(HandleInput);
+            handleInputThread.Start();
 
-            while (running && config.Repeat-- > 0)
+            while (running && config.Repeat > 0)
             {
                 Start(config);
                 gameEnd.WaitOne();
                 client.Close();
             }
+
+            handleInputThread.Abort();
         }
     }
 }

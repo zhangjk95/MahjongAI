@@ -23,6 +23,7 @@ namespace Tenhou
                 try
                 {
                     client = new TcpClient(server, port);
+                    client.ReceiveTimeout = 20000;
                     stream = client.GetStream();
                     return;
                 }
@@ -43,17 +44,17 @@ namespace Tenhou
             client.Close();
         }
 
-        public void Send(String message)
+        public void Send(string message)
         {
-            byte[] data = System.Text.Encoding.ASCII.GetBytes(message + "\0");
+            byte[] data = Encoding.ASCII.GetBytes(message + "\0");
             stream.Write(data, 0, data.Length);
             Trace.TraceInformation("Send: {0}", message);
         }
         public string Receive()
         {
-            byte[] data = new Byte[bufferSize];
+            byte[] data = new byte[bufferSize];
             int bytes = stream.Read(data, 0, data.Length);
-            string responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+            string responseData = Encoding.ASCII.GetString(data, 0, bytes);
             if (!string.IsNullOrEmpty(responseData))
             {
                 Trace.TraceInformation("Receive: {0}", responseData);

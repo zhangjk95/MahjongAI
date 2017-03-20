@@ -29,14 +29,14 @@ namespace Tenhou
             return res;
         }
 
-        public static int Count(this IEnumerable<Tile> tileList, Tile tile)
+        public static int TilesCount(this IEnumerable<Tile> tileList, Tile baseTile, int deltaNum = 0)
         {
-            return tileList.Count(t => t.GenaralId == tile.GenaralId);
+            return tileList.Count(t => t.Type == baseTile.Type && (t.Type != "z" || deltaNum == 0) && t.GenaralId == baseTile.GenaralId + deltaNum);
         }
 
-        public static bool Exists(this IEnumerable<Tile> tileList, Tile tile)
+        public static bool TileExists(this IEnumerable<Tile> tileList, Tile baseTile, int deltaNum = 0)
         {
-            return tileList.Any(t => t.GenaralId == tile.GenaralId);
+            return TilesCount(tileList, baseTile, deltaNum) > 0;
         }
     }
 }

@@ -43,10 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AIController.cs" />
+    <Compile Include="AIControllerDef.cs" />
     <Compile Include="AIControllerHelper.cs" />
     <Compile Include="Models\Config.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="MahjongHelper.cs" />
+    <Compile Include="Models\DefEvalResult.cs" />
     <Compile Include="Models\Direction.cs" />
     <Compile Include="Models\EvalResult.cs" />
     <Compile Include="Models\SafeTiles.cs" />

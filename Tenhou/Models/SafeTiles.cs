@@ -24,16 +24,10 @@ namespace Tenhou.Models
         {
             if (includingGraveyard && player != null)
             {
-                foreach (var tile in player.graveyard)
-                {
-                    yield return tile;
-                }
+                return this.Concat(player.graveyard).Distinct();
             }
 
-            foreach (var tile in this)
-            {
-                yield return tile;
-            }
+            return this;
         }
     }
 }

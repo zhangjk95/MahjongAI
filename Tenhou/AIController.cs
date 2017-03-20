@@ -49,14 +49,14 @@ namespace Tenhou
             player.hand.Add(tile);
             EvalResult currentEvalResult14 = eval14(tile, 1);
             player.hand.Remove(tile);
-            if (currentEvalResult14.Distance == -1 && !currentEvalResult.Furiten && currentEvalResult14.ePoint > 0)
+            if (currentEvalResult14.Distance == -1 && !currentEvalResult.Furiten && currentEvalResult14.E_Point > 0)
             {
                 client.Ron();
             }
             else
             {
                 Trace.WriteLine("Distance: " + currentEvalResult.Distance);
-                Trace.WriteLine(string.Format("Option: pass, ePromotionCount: [{0}], ePoint: {1}", currentEvalResult.ePromotionCount.ToString(", ", c => c.ToString("F0")), currentEvalResult.ePoint));
+                Trace.WriteLine(string.Format("Option: pass, E_PromotionCount: [{0}], E_Point: {1}", currentEvalResult.E_PromotionCount.ToString(", ", c => c.ToString("F0")), currentEvalResult.E_Point));
                 player.hand.Add(tile);
 
                 List<FuuroGroup> candidates = new List<FuuroGroup>()
@@ -106,7 +106,7 @@ namespace Tenhou
                     {
                         tmpResult = eval13();
                     }
-                    if (tmpResult != null && shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
+                    if (tmpResult != null && !shouldDef(tmpResult) && shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
                     {
                         bestResult = Tuple.Create(candidate, discardTile, tmpResult);
                     }
@@ -115,7 +115,7 @@ namespace Tenhou
                 }
 
                 player.hand.Remove(tile);
-                Trace.WriteLine(string.Format("BestResult: {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass", bestResult.Item3.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item3.ePoint));
+                Trace.WriteLine(string.Format("BestResult: {0}, E_PromotionCount: [{1}], E_Point: {2}, Distance: {3}", bestResult.Item1 != null ? bestResult.Item1.type.ToString() : "pass", bestResult.Item3.E_PromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item3.E_Point, bestResult.Item3.Distance));
 
                 if (bestResult.Item1 != null)
                 {
@@ -185,8 +185,8 @@ namespace Tenhou
             player.hand.Add(discardTile);
 
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
-                && (evalResultWithoutReach.ePoint < 7700 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<7700 或 立直人数 >=2
-                && evalResult.ePromotionCount[0] > 0; // 没有空听
+                && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
+                && evalResult.E_PromotionCount[0] > 0; // 没有空听
         }
 
         private bool shouldAnKan(Tile tile)
@@ -222,14 +222,9 @@ namespace Tenhou
         private bool shouldNaki(EvalResult resultBefore, EvalResult resultAfter)
         {
             return resultBefore.Distance >= 3 && hasYakuhai()
-                || resultBefore.Distance <= 2 && (resultBefore.ePoint - resultAfter.ePoint) <= 0 && resultAfter.ePoint > 0
-                || resultBefore.Distance <= 2 && ((resultBefore.ePoint - resultAfter.ePoint) < resultBefore.ePoint * 3 / 5 || (resultBefore.ePoint - resultAfter.ePoint) < 2000) && resultAfter.ePoint > 0
-                    && resultBefore.Distance > resultAfter.Distance && (resultBefore.ePromotionCount[1] <= resultAfter.ePromotionCount[0] || resultBefore.VisibleFuuroCount > 0);
-        }
-
-        private bool shouldDef(EvalResult evalResult)
-        {
-            return false;
+                || resultBefore.Distance <= 2 && (resultBefore.E_Point - resultAfter.E_Point) <= 0 && resultAfter.E_Point > 0
+                || resultBefore.Distance <= 2 && ((resultBefore.E_Point - resultAfter.E_Point) < resultBefore.E_Point * 3 / 5 || (resultBefore.E_Point - resultAfter.E_Point) < 2000) && resultAfter.E_Point > 0
+                    && resultBefore.Distance > resultAfter.Distance && (resultBefore.E_PromotionCount[1] <= resultAfter.E_PromotionCount[0] || resultBefore.VisibleFuuroCount > 0);
         }
 
         public Tile chooseDiscardForAtk(int depth = -1)
@@ -267,7 +262,7 @@ namespace Tenhou
                         result.DiscardedDoraCount = doraValue(tile);
                         if (depth == -1)
                         {
-                            Trace.WriteLine(string.Format("Option: discard {0}, ePromotionCount: [{1}], ePoint: {2}", tile.Name, result.ePromotionCount.ToString(", ", c => c.ToString("F0")), result.ePoint));
+                            Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}], E_Point: {2}", tile.Name, result.E_PromotionCount.ToString(", ", c => c.ToString("F0")), result.E_Point));
                         }
                     }
                     player.hand.Add(tile);
@@ -294,7 +289,7 @@ namespace Tenhou
 
             if (depth == -1)
             {
-                Trace.WriteLine(string.Format("BestResult: discard {0}, ePromotionCount: [{1}], ePoint: {2}", bestResult.Item1.Name, bestResult.Item2.ePromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item2.ePoint));
+                Trace.WriteLine(string.Format("BestResult: discard {0}, E_PromotionCount: [{1}], E_Point: {2}, Distance: {3}", bestResult.Item1.Name, bestResult.Item2.E_PromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item2.E_Point, bestResult.Item2.Distance));
             }
             evalResult = bestResult.Item2;
             return bestResult.Item1;
@@ -353,17 +348,17 @@ namespace Tenhou
 
             if (res.Distance < depth) // 在可以算出得点的情况下
             {
-                promotionTiles.RemoveAll(tuple => tuple.Item2.ePoint <= 0); // 把得点为0的情况去掉（不算进张）
+                promotionTiles.RemoveAll(tuple => tuple.Item2.E_Point <= 0); // 把得点为0的情况去掉（不算进张）
             }
             
-            res.ePromotionCount = new List<double>() { promotionTiles.Count };
+            res.E_PromotionCount = new List<double>() { promotionTiles.Count };
             for (var i = 0; i < Math.Min(depth - 1, res.Distance); i++)
             {
-                res.ePromotionCount.Add(promotionTiles.Count > 0 ? promotionTiles.Sum(tuple => tuple.Item2.ePromotionCount[i]) / promotionTiles.Count : 0);
+                res.E_PromotionCount.Add(promotionTiles.Count > 0 ? promotionTiles.Sum(tuple => tuple.Item2.E_PromotionCount[i]) / promotionTiles.Count : 0);
             }
             if (promotionTiles.Count > 0)
             {
-                res.ePoint = promotionTiles.Sum(tuple => tuple.Item2.ePoint) / promotionTiles.Count;
+                res.E_Point = promotionTiles.Sum(tuple => tuple.Item2.E_Point) / promotionTiles.Count;
             }
             
             return res;
@@ -377,28 +372,23 @@ namespace Tenhou
             {
                 if (res.Distance == -1)
                 {
-                    res.ePoint = calcPoint(lastTile, riichi);
+                    res.E_Point = calcPoint(lastTile, riichi);
                 }
-                res.ePromotionCount = new List<double>();
+                res.E_PromotionCount = new List<double>();
             }
             else
             {
                 EvalResult tmpResult;
                 chooseDiscardForAtk(out tmpResult, depth - 1);
-                res.ePoint = tmpResult.ePoint;
-                res.ePromotionCount = tmpResult.ePromotionCount;
+                res.E_Point = tmpResult.E_Point;
+                res.E_PromotionCount = tmpResult.E_PromotionCount;
             }
             return res;
         }
 
-        private Tile chooseDiscardForDef()
-        {
-            throw new NotImplementedException();
-        }
-
         private class EvalResultComp : IComparer<EvalResult>
         {
-            private EPromotionCountComp ePromotionComp = new EPromotionCountComp();
+            private E_PromotionCountComp e_PromotionComp = new E_PromotionCountComp();
 
             public int Compare(EvalResult x, EvalResult y)
             {
@@ -419,7 +409,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = (x.ePoint * x.ePromotionCount.Product(n => n)).CompareTo(y.ePoint * y.ePromotionCount.Product(n => n))) != 0) // 期望得点数 * 进张数的积
+                else if ((res = (x.E_Point * x.E_PromotionCount.Product(n => n)).CompareTo(y.E_Point * y.E_PromotionCount.Product(n => n))) != 0) // 期望得点数 * 进张数的积
                 {
                     return res;
                 }
@@ -427,7 +417,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if (x.ePromotionCount.Count > 0 && (res = (x.ePromotionCount[0] - (x.DiscardedDoraCount.CompareTo(y.DiscardedDoraCount) > 0 ? 1 : 0)).CompareTo(y.ePromotionCount[0])) != 0) // 进张数（如果打掉的牌是dora，打掉的话视为进张数少1）
+                else if (x.E_PromotionCount.Count > 0 && (res = (x.E_PromotionCount[0] - (x.DiscardedDoraCount.CompareTo(y.DiscardedDoraCount) > 0 ? 1 : 0)).CompareTo(y.E_PromotionCount[0])) != 0) // 进张数（如果打掉的牌是dora，打掉的话视为进张数少1）
                 {
                     return res;
                 }
@@ -439,7 +429,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = ePromotionComp.Compare(x.ePromotionCount, y.ePromotionCount)) != 0) // 后几层的进张数
+                else if ((res = e_PromotionComp.Compare(x.E_PromotionCount, y.E_PromotionCount)) != 0) // 后几层的进张数
                 {
                     return res;
                 }
@@ -454,7 +444,7 @@ namespace Tenhou
             }
         }
 
-        private class EPromotionCountComp : IComparer<List<double>>
+        private class E_PromotionCountComp : IComparer<List<double>>
         {
             public int Compare(List<double> x, List<double> y)
             {

@@ -21,6 +21,7 @@ namespace Tenhou
         public event Action<Player, Tile> OnDiscard;
         public event Action OnLogin;
         public event Action OnClose;
+        public event Action OnConnectionException;
         public event Action<bool> OnGameStart;
         public event Action OnGameEnd;
         public event Action<Player, FuuroGroup> OnNaki;
@@ -57,12 +58,12 @@ namespace Tenhou
         {
             if (connected)
             {
+                connected = false;
                 if (OnClose != null)
                 {
                     OnClose();
                 }
                 client.Close();
-                connected = false;
             }
         }
 
@@ -197,8 +198,15 @@ namespace Tenhou
                 }
                 catch (Exception ex)
                 {
-                    Close();
-                    return;
+                    if (connected)
+                    {
+                        if (OnConnectionException != null)
+                        {
+                            OnConnectionException();
+                        }
+                        Close();
+                    }
+                    break;
                 }
                 foreach (string substr in str.Split('\0'))
                 {

@@ -15,7 +15,7 @@ namespace Tenhou.Models
         public int DoraCount { get; set; }
         public int DoraInFuuroCount { get; set; }
         public int KanCount { get; set; }
-        public List<double> ePromotionCount { get; set; }
-        public int ePoint { get; set; }
+        public List<double> E_PromotionCount { get; set; }
+        public int E_Point { get; set; }
     }
 }

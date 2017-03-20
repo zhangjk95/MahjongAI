@@ -35,6 +35,7 @@ namespace Tenhou
             client.OnGameEnd += OnGameEnd;
             client.OnLogin += OnLogin;
             client.OnClose += OnClose;
+            client.OnConnectionException += OnConnectionException;
             client.OnNaki += OnNaki;
             client.OnReach += OnReach;
             client.OnUnknownEvent += OnUnknownEvent;
@@ -47,8 +48,12 @@ namespace Tenhou
             client.OnWait -= OnWait;
             client.OnDiscard -= OnDiscard;
             client.OnGameStart -= OnGameStart;
-            client.OnClose -= OnClose;
             client.OnGameEnd -= OnGameEnd;
+            client.OnLogin -= OnLogin;
+            client.OnClose -= OnClose;
+            client.OnConnectionException -= OnConnectionException;
+            client.OnNaki -= OnNaki;
+            client.OnReach -= OnReach;
             client.OnUnknownEvent -= OnUnknownEvent;
             isRunning = false;
         }
@@ -61,6 +66,11 @@ namespace Tenhou
         protected virtual void OnClose()
         {
             Stop();
+        }
+
+        protected virtual void OnConnectionException()
+        {
+            
         }
 
         protected virtual void OnDraw(Tile tile)
