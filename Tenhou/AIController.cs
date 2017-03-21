@@ -252,14 +252,20 @@ namespace Tenhou
                 {
                     player.hand.Remove(tile);
                     player.graveyard.Add(tile);
-                    var tmpDistance = calcDistance();
-                    if (tmpDistance <= currentDistance || currentNormalDistance <= currentDistance + 1 && tmpDistance <= currentNormalDistance) // 打掉后向听数不变，或者有希望做标准型且打掉后标准型的向听数不变
+                    int tmpNormalDistance;
+                    var tmpDistance = calcDistance(out tmpNormalDistance);
+                    if (tmpDistance <= currentDistance || currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变
                     {
                         var result = evalResults[tile.Name] = eval13(depth);
                         result.DiscardedDoraCount = doraValue(tile);
                         if (depth == -1)
                         {
-                            Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}], E_Point: {2}", tile.Name, result.E_PromotionCount.ToString(", ", c => c.ToString("F0")), result.E_Point));
+                            Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}{3}", 
+                                tile.Name, 
+                                result.E_PromotionCount.ToString(", ", c => c.ToString("F0")), 
+                                result.E_Point, 
+                                result.Distance > currentDistance ? ", Distance++" : "",
+                                result.E_NormalPromitionCount != result.E_PromotionCount[0] ? "(" + result.E_NormalPromitionCount + ")" : ""));
                         }
                     }
                     else
@@ -290,7 +296,12 @@ namespace Tenhou
 
             if (depth == -1)
             {
-                Trace.WriteLine(string.Format("BestResult: discard {0}, E_PromotionCount: [{1}], E_Point: {2}, Distance: {3}", bestResult.Item1.Name, bestResult.Item2.E_PromotionCount.ToString(", ", c => c.ToString("F0")), bestResult.Item2.E_Point, bestResult.Item2.Distance));
+                Trace.WriteLine(string.Format("BestResult: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}, Distance: {3}", 
+                    bestResult.Item1.Name, 
+                    bestResult.Item2.E_PromotionCount.ToString(", ", c => c.ToString("F0")), 
+                    bestResult.Item2.E_Point, 
+                    bestResult.Item2.Distance,
+                    bestResult.Item2.E_NormalPromitionCount != bestResult.Item2.E_PromotionCount[0] ? "(" + bestResult.Item2.E_NormalPromitionCount + ")" : ""));
             }
             evalResult = bestResult.Item2;
             return bestResult.Item1;
@@ -319,6 +330,7 @@ namespace Tenhou
             res.KanCount = player.fuuro.Count(f => f.type == FuuroType.ankan || f.type == FuuroType.kakan || f.type == FuuroType.minkan);
             var promotionTiles = new List<Tuple<Tile, EvalResult>>();
             var evalResults = new Dictionary<string, EvalResult>();
+            var normalDistanceResults = new Dictionary<string, int>();
             var candidates = new HashSet<string>();
             var visibleTiles = getVisibleTiles().ToList();
             for (var i = 0; i < Tile.TotalCount; i++)
@@ -326,23 +338,31 @@ namespace Tenhou
                 if (!visibleTiles.Exists(t => t.Id == i))
                 {
                     var tile = new Tile(i);
-                    EvalResult currentResult;
-                    if (!evalResults.TryGetValue(tile.Name, out currentResult))
+                    EvalResult result;
+                    if (!evalResults.TryGetValue(tile.Name, out result))
                     {
                         player.hand.Add(tile);
-                        if (calcDistance() < res.Distance)
+
+                        int tmpNormalDistance;
+                        if (calcDistance(out tmpNormalDistance) < res.Distance)
                         {
-                            currentResult = evalResults[tile.Name] = eval14(tile, depth, riichi);
+                            result = evalResults[tile.Name] = eval14(tile, depth, riichi);
                         }
                         else
                         {
-                            currentResult = evalResults[tile.Name] = null;
+                            result = evalResults[tile.Name] = null;
                         }
+
+                        normalDistanceResults[tile.Name] = tmpNormalDistance;
                         player.hand.Remove(tile);
                     }
-                    if (currentResult != null)
+                    if (normalDistanceResults[tile.Name] < res.NormalDistance)
                     {
-                        promotionTiles.Add(Tuple.Create(tile, currentResult));
+                        res.E_NormalPromitionCount++;
+                    }
+                    if (result != null)
+                    {
+                        promotionTiles.Add(Tuple.Create(tile, result));
                     }
                 }
             }
@@ -406,13 +426,20 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance == y.NormalDistance && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 2) // 避免莫名其妙的七对子
+                else if (x.Distance == y.Distance && x.Distance >= 2 && x.NormalDistance == y.NormalDistance && x.NormalDistance == x.Distance + 1 
+                    && (res = x.E_NormalPromitionCount.CompareTo(y.E_NormalPromitionCount)) != 0) // 如果两个都不是一般型且有希望做一般型，比较一般型的进张数
                 {
-                    return 1;
+                    return res;
                 }
-                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance == x.NormalDistance && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 2) // 避免莫名其妙的七对子
+                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance == y.NormalDistance && x.E_PromotionCount.Count > 1 && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 2
+                    && (res = x.E_NormalPromitionCount.CompareTo(y.E_NormalPromitionCount)) != 0) // 如果x是一般型但y不是，且x形状比y好很多，比较一般型的进张数
                 {
-                    return -1;
+                    return res;
+                }
+                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance == x.NormalDistance && y.E_PromotionCount.Count > 1 && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 2
+                    && (res = x.E_NormalPromitionCount.CompareTo(y.E_NormalPromitionCount)) != 0) // 如果y是一般型但x不是，且y形状比x好很多，比较一般型的进张数
+                {
+                    return res;
                 }
                 else if ((res = y.Distance.CompareTo(x.Distance)) != 0) // 向听数
                 {
