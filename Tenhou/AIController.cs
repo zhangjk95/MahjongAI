@@ -286,6 +286,11 @@ namespace Tenhou
                     continue;
                 }
 
+                if (depth == -1)
+                {
+                    Console.WriteLine("!");
+                }
+
                 if (bestResult == null 
                     || evalResultComp.Compare(result, bestResult.Item2) > 0 
                     || evalResultComp.Compare(result, bestResult.Item2) == 0 && getWeight(tile) < getWeight(bestResult.Item1))
@@ -356,7 +361,7 @@ namespace Tenhou
                         normalDistanceResults[tile.Name] = tmpNormalDistance;
                         player.hand.Remove(tile);
                     }
-                    if (normalDistanceResults[tile.Name] < res.NormalDistance)
+                    if (normalDistanceResults[tile.Name] < res.NormalDistance && normalDistanceResults[tile.Name] <= res.Distance)
                     {
                         res.E_NormalPromitionCount++;
                     }
@@ -417,6 +422,10 @@ namespace Tenhou
 
             public int Compare(EvalResult x, EvalResult y)
             {
+                if (x.E_NormalPromitionCount == 0 && y.E_NormalPromitionCount == 73)
+                {
+                    Console.WriteLine("!");
+                }
                 int res = 0;
                 if ((y == null) && (x == null))
                 {
@@ -426,18 +435,23 @@ namespace Tenhou
                 {
                     return res;
                 }
+                else if (x.Distance == y.Distance && x.Distance >= 2 && x.NormalDistance > x.Distance && y.NormalDistance > x.Distance
+                    && (res = y.NormalDistance.CompareTo(x.NormalDistance)) != 0) // 如果两个都不是一般型选有希望做一般型的那个
+                {
+                    return res;
+                }
                 else if (x.Distance == y.Distance && x.Distance >= 2 && x.NormalDistance == y.NormalDistance && x.NormalDistance == x.Distance + 1 
-                    && (res = x.E_NormalPromitionCount.CompareTo(y.E_NormalPromitionCount)) != 0) // 如果两个都不是一般型且有希望做一般型，比较一般型的进张数
+                    && (res = comparePromotionCount0(x.E_NormalPromitionCount, x.DiscardedDoraCount, y.E_NormalPromitionCount, y.DiscardedDoraCount)) != 0) // 如果两个都不是一般型且都有希望做一般型，比较一般型的进张数
                 {
                     return res;
                 }
-                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance == y.NormalDistance && x.E_PromotionCount.Count > 1 && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 2
-                    && (res = x.E_NormalPromitionCount.CompareTo(y.E_NormalPromitionCount)) != 0) // 如果x是一般型但y不是，且x形状比y好很多，比较一般型的进张数
+                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance <= y.NormalDistance && x.E_PromotionCount.Count > 1 && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 2
+                    && (res = comparePromotionCount0(x.E_NormalPromitionCount, x.DiscardedDoraCount, y.E_NormalPromitionCount, y.DiscardedDoraCount)) != 0) // 如果x是一般型但y不是，且x形状比y好很多，比较一般型的进张数
                 {
                     return res;
                 }
-                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance == x.NormalDistance && y.E_PromotionCount.Count > 1 && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 2
-                    && (res = x.E_NormalPromitionCount.CompareTo(y.E_NormalPromitionCount)) != 0) // 如果y是一般型但x不是，且y形状比x好很多，比较一般型的进张数
+                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance <= x.NormalDistance && y.E_PromotionCount.Count > 1 && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 2
+                    && (res = comparePromotionCount0(x.E_NormalPromitionCount, x.DiscardedDoraCount, y.E_NormalPromitionCount, y.DiscardedDoraCount)) != 0) // 如果y是一般型但x不是，且y形状比x好很多，比较一般型的进张数
                 {
                     return res;
                 }
@@ -445,7 +459,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = y.Furiten.CompareTo(x.Furiten)) != 0) // 是否振听
+                else if (x.Distance <= 2 && (res = y.Furiten.CompareTo(x.Furiten)) != 0) // 是否振听
                 {
                     return res;
                 }
@@ -457,7 +471,11 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if (x.E_PromotionCount.Count > 0 && (res = (x.E_PromotionCount[0] - (x.DiscardedDoraCount.CompareTo(y.DiscardedDoraCount) > 0 ? 1 : 0)).CompareTo(y.E_PromotionCount[0])) != 0) // 进张数（如果打掉的牌是dora，打掉的话视为进张数少1）
+                else if (x.E_PromotionCount.Count > 0 && (res = comparePromotionCount0(x.E_PromotionCount[0], x.DiscardedDoraCount, y.E_PromotionCount[0], y.DiscardedDoraCount)) != 0) // 进张数
+                {
+                    return res;
+                }
+                else if (x.E_PromotionCount.Count > 0 && (res = comparePromotionCount0(x.E_NormalPromitionCount, x.DiscardedDoraCount, y.E_NormalPromitionCount, y.DiscardedDoraCount)) != 0) // 一般型进张数
                 {
                     return res;
                 }
@@ -480,6 +498,22 @@ namespace Tenhou
                 else
                 {
                     return 0;
+                }
+            }
+
+            private int comparePromotionCount0(double x, int xDiscardedDoraCount, double y, int yDiscardedDoraCount)
+            {
+                if (xDiscardedDoraCount > yDiscardedDoraCount) // 如果打掉的牌是dora，打掉的话视为进张数少1
+                {
+                    return (x - 1).CompareTo(y);
+                }
+                else if (xDiscardedDoraCount < yDiscardedDoraCount)
+                {
+                    return (x + 1).CompareTo(y);
+                }
+                else
+                {
+                    return x.CompareTo(y);
                 }
             }
         }

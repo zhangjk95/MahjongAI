@@ -20,10 +20,10 @@ namespace Tenhou
             client.gameData.players[1].direction = Direction.N;
             client.gameData.dora = new Dora() { new Tile(48) };
             client.player.hand = new Hand() {
-                new Tile(16), new Tile(28), new Tile(32), new Tile(33),
-                new Tile(52), new Tile(54), new Tile(64), new Tile(89),
-                new Tile(96), new Tile(100), new Tile(112), new Tile(116),
-                new Tile(124), new Tile(0)
+                new Tile(16), new Tile(17), new Tile(20), new Tile(36),
+                new Tile(37), new Tile(44), new Tile(45), new Tile(48),
+                new Tile(68), new Tile(80), new Tile(92), new Tile(93),
+                new Tile(96), new Tile(100)
             };
             client.player.fuuro = new Fuuro() { };
             var ai = new AIController(client);
