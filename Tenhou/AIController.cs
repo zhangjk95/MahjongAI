@@ -286,11 +286,6 @@ namespace Tenhou
                     continue;
                 }
 
-                if (depth == -1)
-                {
-                    Console.WriteLine("!");
-                }
-
                 if (bestResult == null 
                     || evalResultComp.Compare(result, bestResult.Item2) > 0 
                     || evalResultComp.Compare(result, bestResult.Item2) == 0 && getWeight(tile) < getWeight(bestResult.Item1))
@@ -422,10 +417,6 @@ namespace Tenhou
 
             public int Compare(EvalResult x, EvalResult y)
             {
-                if (x.E_NormalPromitionCount == 0 && y.E_NormalPromitionCount == 73)
-                {
-                    Console.WriteLine("!");
-                }
                 int res = 0;
                 if ((y == null) && (x == null))
                 {
