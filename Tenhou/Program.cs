@@ -17,7 +17,6 @@ namespace Tenhou
         static Monitor monitor;
         static AIController controller;
         static AutoResetEvent gameEnd = new AutoResetEvent(false);
-        static bool running = true;
 
         static void Start(Config config)
         {
@@ -53,7 +52,7 @@ namespace Tenhou
             client.Login();
         }
 
-        static void HandleInput()
+        static void HandleInput(Config config)
         {
             while (true)
             {
@@ -62,7 +61,7 @@ namespace Tenhou
                 {
                     case "q":
                         Console.WriteLine("Quiting...");
-                        running = false;
+                        config.Repeat = 1;
                         break;
                 }
             }
@@ -104,11 +103,11 @@ namespace Tenhou
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
             Config config = GetConfig();
-
-            var handleInputThread = new Thread(HandleInput);
+            
+            var handleInputThread = new Thread(() => HandleInput(config));
             handleInputThread.Start();
 
-            while (running && config.Repeat > 0)
+            while (config.Repeat > 0)
             {
                 Start(config);
                 gameEnd.WaitOne();
