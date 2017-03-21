@@ -1,4 +1,5 @@
 #include <iostream>
+#include "common.h"
 #include "syanten.h"
 #include "mjscore.h"
 using namespace std;
@@ -27,8 +28,9 @@ void handleSyanten() {
 	cin >> fuurosuu;
 	syanten.set_fuurosuu(fuurosuu);
 
-	int res = syanten.AnySyanten();
-	cout << res << endl;
+	int resNormal;
+	int res = syanten.AnySyanten(OUT resNormal);
+	cout << res << " " << resNormal << endl;
 }
 
 int parseFuuroType(const string& fuuroType) {
@@ -123,6 +125,7 @@ void initMjscore() {
 }
 
 int main() {
+	ios_base::sync_with_stdio(false);
 	initMjscore();
 	string input;
 	while (cin >> input) {

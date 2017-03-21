@@ -239,7 +239,8 @@ namespace Tenhou
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
             Tuple<Tile, EvalResult> bestResult = null;
-            var currentDistance = calcDistance();
+            int currentNormalDistance;
+            var currentDistance = calcDistance(out currentNormalDistance);
             if (depth == -1)
             {
                 Trace.WriteLine("Distance: " + currentDistance);
@@ -252,11 +253,7 @@ namespace Tenhou
                     player.hand.Remove(tile);
                     player.graveyard.Add(tile);
                     var tmpDistance = calcDistance();
-                    if (tmpDistance > currentDistance) // 打掉后向听数增加
-                    {
-                        evalResults[tile.Name] = null;
-                    }
-                    else
+                    if (tmpDistance <= currentDistance || currentNormalDistance <= currentDistance + 1 && tmpDistance <= currentNormalDistance) // 打掉后向听数不变，或者有希望做标准型且打掉后标准型的向听数不变
                     {
                         var result = evalResults[tile.Name] = eval13(depth);
                         result.DiscardedDoraCount = doraValue(tile);
@@ -264,6 +261,10 @@ namespace Tenhou
                         {
                             Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}], E_Point: {2}", tile.Name, result.E_PromotionCount.ToString(", ", c => c.ToString("F0")), result.E_Point));
                         }
+                    }
+                    else
+                    {
+                        evalResults[tile.Name] = null;
                     }
                     player.hand.Add(tile);
                     player.graveyard.Remove(tile);
@@ -298,7 +299,9 @@ namespace Tenhou
         private EvalResult eval13(int depth = -1, bool riichi = true)
         {
             var res = new EvalResult();
-            res.Distance = calcDistance();
+            int normalDistance;
+            res.Distance = calcDistance(out normalDistance);
+            res.NormalDistance = normalDistance;
             if (depth == -1)
             {
                 if (res.Distance > defaultDepth - 1) // 如果向听数高就减少搜索深度
@@ -367,7 +370,9 @@ namespace Tenhou
         private EvalResult eval14(Tile lastTile, int depth, bool riichi = true)
         {
             var res = new EvalResult();
-            res.Distance = calcDistance();
+            int normalDistance;
+            res.Distance = calcDistance(out normalDistance);
+            res.NormalDistance = normalDistance;
             if (depth <= 1 || res.Distance == -1)
             {
                 if (res.Distance == -1)
@@ -397,9 +402,17 @@ namespace Tenhou
                 {
                     return 0;
                 }
-                if ((res = (y == null).CompareTo(x == null)) != 0)
+                else if ((res = (y == null).CompareTo(x == null)) != 0)
                 {
                     return res;
+                }
+                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance == y.NormalDistance && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 2) // 避免莫名其妙的七对子
+                {
+                    return 1;
+                }
+                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance == x.NormalDistance && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 2) // 避免莫名其妙的七对子
+                {
+                    return -1;
                 }
                 else if ((res = y.Distance.CompareTo(x.Distance)) != 0) // 向听数
                 {

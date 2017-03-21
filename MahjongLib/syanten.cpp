@@ -124,8 +124,8 @@ int Syanten::NormalSyanten()
 	return result;
 }
 
-int Syanten::AnySyanten() {
-	int res = NormalSyanten();
+int Syanten::AnySyanten(OUT int& normalSyanten) {
+	int res = normalSyanten = NormalSyanten();
 	if (fuurosuu == 0) {
 		res = min(res, TiitoituSyanten());
 		res = min(res, KokusiSyanten());

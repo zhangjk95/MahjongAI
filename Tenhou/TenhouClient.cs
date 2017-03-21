@@ -54,16 +54,23 @@ namespace Tenhou
             Close();
         }
 
-        public void Close()
+        public void Close(bool unexpected = false)
         {
-            if (connected)
+            lock (client)
             {
-                connected = false;
-                if (OnClose != null)
+                if (connected)
                 {
-                    OnClose();
+                    connected = false;
+                    if (unexpected && OnConnectionException != null)
+                    {
+                        OnConnectionException();
+                    }
+                    if (OnClose != null)
+                    {
+                        OnClose();
+                    }
+                    client.Close();
                 }
-                client.Close();
             }
         }
 
@@ -183,7 +190,7 @@ namespace Tenhou
                 }
                 catch (Exception ex)
                 {
-                    Close();
+                    Close(true);
                     return;
                 }
             }
@@ -198,14 +205,7 @@ namespace Tenhou
                 }
                 catch (Exception ex)
                 {
-                    if (connected)
-                    {
-                        if (OnConnectionException != null)
-                        {
-                            OnConnectionException();
-                        }
-                        Close();
-                    }
+                    Close(true);
                     break;
                 }
                 foreach (string substr in str.Split('\0'))
@@ -534,7 +534,7 @@ namespace Tenhou
                 }
                 catch (Exception ex)
                 {
-                    Close();
+                    Close(true);
                     return;
                 }                
             }

@@ -81,7 +81,13 @@ namespace Tenhou
 
         private int calcDistance()
         {
-            return MahjongHelper.getInstance().calcDistance(player.hand, player.fuuro.Count);
+            int tmp;
+            return calcDistance(out tmp);
+        }
+
+        private int calcDistance(out int normalDistance)
+        {
+            return MahjongHelper.getInstance().calcDistance(player.hand, player.fuuro.Count, out normalDistance);
         }
 
         private FuuroGroup tryGetFuuroGroup(FuuroType type, IEnumerable<Tuple<int, int>> req, params Tile[] tiles)

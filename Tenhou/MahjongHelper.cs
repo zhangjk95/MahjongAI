@@ -73,7 +73,7 @@ namespace Tenhou
             return instances[currentInstanceIndex];
         }
 
-        public int calcDistance(Hand hand, int fuuroCount)
+        public int calcDistance(Hand hand, int fuuroCount, out int normalDistance)
         {
             lock (process)
             {
@@ -88,7 +88,9 @@ namespace Tenhou
 
                 send(fuuroCount);
 
-                var res = int.Parse(process.StandardOutput.ReadLine());
+                var output = process.StandardOutput.ReadLine().Split();
+                var res = int.Parse(output[0]);
+                normalDistance = int.Parse(output[1]);
                 return res;
             }
         }

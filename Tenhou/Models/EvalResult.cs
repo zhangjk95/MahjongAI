@@ -10,6 +10,7 @@ namespace Tenhou.Models
     {
         public bool Furiten { get; set; }
         public int Distance { get; set; }
+        public int NormalDistance { get; set; }
         public int VisibleFuuroCount { get; set; }
         public int DiscardedDoraCount { get; set; }
         public int DoraCount { get; set; }

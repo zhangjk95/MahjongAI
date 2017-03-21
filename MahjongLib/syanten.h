@@ -11,6 +11,7 @@
 #include <map>
 #include <fstream>
 #include <string>
+#include "common.h"
 using namespace std;
 
 //シャンテン数を返すクラス(HashTable版)
@@ -32,7 +33,7 @@ public:
 	int NormalSyanten();//通常手シャンテン
 	int KokusiSyanten();//国士シャンテン
 	int TiitoituSyanten();//チートイシャンテン
-	int AnySyanten();
+	int AnySyanten(OUT int& normalSyanten);
 
 	void set_tehai(int t[]);//手牌セット（int[38]以上、赤統合済み）
 	void set_fuurosuu(int a){fuurosuu=a;}//フーロ数
