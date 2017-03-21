@@ -52,18 +52,13 @@ namespace Tenhou
             var evalResults = new Dictionary<string, DefEvalResult>();
             Tuple<Tile, DefEvalResult> bestResult = null;
             Trace.WriteLine("Defense: " + gameData.players.Where(p => defLevel(p) > 0).ToString(", ", p => string.Format("player({0}):{1}", p.id, defLevel(p))));
-            Trace.WriteLine(string.Format("Visible tiles: {0}" , getVisibleTiles().ToString(" ", t => t.Name)));
-            foreach (var p in gameData.players.Where(p => defLevel(p) > 0))
-            {
-                Trace.WriteLine(string.Format("Safe tiles for player({0}): {1}", p.id, p.safeTiles.Get().ToString(" ", t => t.Name)));
-            }
 
             foreach (var tile in player.hand)
             {
                 if (!evalResults.ContainsKey(tile.Name))
                 {
                     var result = evalResults[tile.Name] = evalDef(tile);
-                    Trace.WriteLine(string.Format("Option: discard {0}, Risk: {1}{2}", tile.Name, result.Risk, result.Risk == 0 ? "(" + result.RiskForOthers + ")" : ""));
+                    Trace.WriteLine(string.Format("Option: discard {0}, Risk: {1:0.##}{2}", tile.Name, result.Risk, result.Risk == 0 ? "(" + result.RiskForOthers.ToString("0.##") + ")" : ""));
                     if (bestResult == null
                         || defEvalResultComp.Compare(result, bestResult.Item2) > 0)
                     {
@@ -72,7 +67,7 @@ namespace Tenhou
                 }
             }
 
-            Trace.WriteLine(string.Format("BestResult: discard {0}, Risk: {1}{2}", bestResult.Item1.Name, bestResult.Item2.Risk, bestResult.Item2.Risk == 0 ? "(" + bestResult.Item2.RiskForOthers + ")" : ""));
+            Trace.WriteLine(string.Format("BestResult: discard {0}, Risk: {1:0.##}{2}", bestResult.Item1.Name, bestResult.Item2.Risk, bestResult.Item2.Risk == 0 ? "(" + bestResult.Item2.RiskForOthers.ToString("0.##") + ")" : ""));
             defEvalResult = bestResult.Item2;
             return bestResult.Item1;
         }
