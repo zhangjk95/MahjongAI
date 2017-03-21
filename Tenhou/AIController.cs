@@ -254,7 +254,7 @@ namespace Tenhou
                     player.graveyard.Add(tile);
                     int tmpNormalDistance;
                     var tmpDistance = calcDistance(out tmpNormalDistance);
-                    if (tmpDistance <= currentDistance || currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变
+                    if (tmpDistance <= currentDistance || depth == -1 && currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变
                     {
                         var result = evalResults[tile.Name] = eval13(depth);
                         result.DiscardedDoraCount = doraValue(tile);
