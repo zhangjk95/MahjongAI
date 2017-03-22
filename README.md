@@ -54,3 +54,11 @@ For example:
 
 	touch ~/TenhouLog.txt
 	docker run -v ~/TenhouLog.txt:/usr/src/app/build/TenhouLog.txt -it tenhou-client
+	
+## License
+
+This program is under GPL. You can use this program at your OWN risk.
+
+## Acknowledgements
+
+The code calculating "syanten" and "score" are downloaded from [http://cmj3.web.fc2.com/](http://cmj3.web.fc2.com/).
