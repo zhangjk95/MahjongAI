@@ -12,12 +12,20 @@ namespace Tenhou
     {
         private DefEvalResultComp defEvalResultComp = new DefEvalResultComp();
 
-        private bool shouldDef(EvalResult evalResult)
+        private bool shouldDef(EvalResult evalResult, Tile discardTile)
         {
-            return gameData.players.Any(p => defLevel(p) >= 2)
-                    && (evalResult.Distance >= 2 && evalResult.E_Point < 8000 || evalResult.Distance == 1 && evalResult.E_Point < 4000 || evalResult.Distance == 0 && evalResult.E_Point < 2000 || gameData.remainingTile / 4 <= evalResult.Distance * 2)
+            return gameData.players.Any(p => defLevel(p) >= 4)
+                    && (evalResult.Distance >= 2 && evalResult.E_Point < 8000 
+                        || evalResult.Distance == 1 && evalResult.E_Point < 4000 
+                        || (evalResult.Distance == 0 && evalResult.E_Point < 2000 || gameData.remainingTile / 4 <= evalResult.Distance * 2)
+                            && (discardTile == null || evalDef(discardTile).Risk > 15))
+                || gameData.players.Any(p => defLevel(p) >= 2)
+                    && (evalResult.Distance >= 2 && evalResult.E_Point < 4000 
+                        || evalResult.Distance == 1 && evalResult.E_Point < 2000 
+                        || (evalResult.Distance == 0 && evalResult.E_Point < 1000 || evalResult.Distance > 0 && gameData.remainingTile / 4 <= evalResult.Distance * 2)
+                            && (discardTile == null || evalDef(discardTile).Risk > 15))
                 || gameData.players.Any(p => defLevel(p) >= 1)
-                    && (evalResult.Distance >= 2 && evalResult.E_Point < 4000 || evalResult.Distance == 1 && evalResult.E_Point < 2000 || evalResult.Distance == 0 && evalResult.E_Point < 1000 || evalResult.Distance > 0 && gameData.remainingTile / 4 <= evalResult.Distance * 2);
+                    && evalResult.Distance >= 2;
         }
 
         private int defLevel(Player forPlayer)
@@ -28,9 +36,17 @@ namespace Tenhou
             }
             else if (forPlayer.reached)
             {
-                return 2;
+                return 4;
+            }
+            else if (forPlayer.fuuro.Tiles.Sum(t => doraValue(t)) >= 3 && forPlayer.fuuro.VisibleCount * 3 + forPlayer.graveyard.Count >= 15)
+            {
+                return 4;
             }
             else if (forPlayer.fuuro.VisibleCount > 0 && forPlayer.fuuro.VisibleCount * 3 + forPlayer.graveyard.Count >= 15)
+            {
+                return 2;
+            }
+            else if (forPlayer.graveyard.Count >= 15)
             {
                 return 1;
             }

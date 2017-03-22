@@ -106,7 +106,7 @@ namespace Tenhou
                     {
                         tmpResult = eval13();
                     }
-                    if (tmpResult != null && !shouldDef(tmpResult) && shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
+                    if (tmpResult != null && !shouldDef(tmpResult, discardTile) && shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
                     {
                         bestResult = Tuple.Create(candidate, discardTile, tmpResult);
                     }
@@ -150,7 +150,7 @@ namespace Tenhou
         private void decideMove() {
             EvalResult evalResult;
             Tile discardTile = chooseDiscardForAtk(out evalResult);
-            if (!shouldDef(evalResult))
+            if (!shouldDef(evalResult, discardTile))
             {
                 if (shouldAnKan(discardTile))
                 {
