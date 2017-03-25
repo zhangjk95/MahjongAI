@@ -198,17 +198,20 @@ namespace Tenhou
 
         private void StartRecv() {
             while (true) {
-                string str;
+                string str = "";
                 try
                 {
-                    str = client.Receive();
+                    do
+                    {
+                        str += client.Receive();
+                    } while (!str.EndsWith("\0") && !str.EndsWith(">"));
                 }
                 catch (Exception ex)
                 {
                     Close(true);
                     break;
                 }
-                foreach (string substr in str.Split('\0'))
+                foreach (string substr in str.Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     HandleXML(substr);
                 }
