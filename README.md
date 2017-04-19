@@ -1,5 +1,9 @@
 # Tenhou Client
-A simplified client for *Tenhou.net*(one of the most popular online mahjong services in Japan), including an AI which can easily defeat other players in *Ippan(Normal)* level games.
+A simplified client for *Tenhou.net*(one of the most popular online mahjong services in Japan), including an AI which can easily defeat other players in *Normal level(一般)* games and also plays well in *High level(上級)* games.
+
+## Result
+
+![image](https://cloud.githubusercontent.com/assets/4890396/25177202/a38a74a8-2533-11e7-89a4-4613e8e1b3dc.png)
 
 ## How to run
 
