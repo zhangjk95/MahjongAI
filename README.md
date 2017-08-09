@@ -3,7 +3,9 @@ A simplified client for *Tenhou.net*(one of the most popular online mahjong serv
 
 ## Result
 
-![image](https://cloud.githubusercontent.com/assets/4890396/25177202/a38a74a8-2533-11e7-89a4-4613e8e1b3dc.png)
+After 300+ matches:
+
+![image](https://user-images.githubusercontent.com/4890396/29127564-774f5be2-7cef-11e7-8a5d-d0d5f897b9b8.png)
 
 ## How to run
 
