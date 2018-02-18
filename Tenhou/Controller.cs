@@ -73,7 +73,7 @@ namespace Tenhou
             
         }
 
-        protected virtual void OnDraw(Tile tile)
+        public virtual void OnDraw(Tile tile)
         {
             
         }

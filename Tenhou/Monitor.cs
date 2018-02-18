@@ -31,7 +31,7 @@ namespace Tenhou
             Trace.WriteLine("Unexpectedly disconnected.");
         }
 
-        protected override void OnDraw(Tile tile)
+        public override void OnDraw(Tile tile)
         {
             Trace.WriteLine(string.Format("draw {0}", tile.Name));
             showCurrentState();

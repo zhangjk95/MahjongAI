@@ -20,7 +20,7 @@ namespace Tenhou
             MahjongHelper.getInstance();
         }
 
-        protected override void OnDraw(Tile tile)
+        public override void OnDraw(Tile tile)
         {
             int distance = calcDistance();
             if (distance == -1 && (player.fuuro.VisibleCount == 0 || calcPoint(tile, false) > 0))
@@ -152,7 +152,8 @@ namespace Tenhou
 
         private void decideMove() {
             EvalResult evalResult;
-            Tile discardTile = chooseDiscardForAtk(out evalResult);
+            List<Tuple<Tile, EvalResult>> options;
+            Tile discardTile = chooseDiscardForAtk(out options, out evalResult);
             if (!shouldDef(evalResult, discardTile))
             {
                 if (shouldAnKan(discardTile))
@@ -174,7 +175,7 @@ namespace Tenhou
             }
             else
             {
-                Tile newDiscardTile = chooseDiscardForDef();
+                Tile newDiscardTile = chooseDiscardForDef(options);
                 client.Discard(newDiscardTile);
             }
         }
@@ -233,19 +234,26 @@ namespace Tenhou
         public Tile chooseDiscardForAtk(int depth = -1)
         {
             EvalResult evalResult;
-            var res = chooseDiscardForAtk(out evalResult, depth);
-            return res;
+            return chooseDiscardForAtk(out evalResult, depth);
         }
 
         private Tile chooseDiscardForAtk(out EvalResult evalResult, int depth = -1)
+        {
+            List<Tuple<Tile, EvalResult>> options;
+            return chooseDiscardForAtk(out options, out evalResult, depth);
+        }
+
+        private Tile chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, int depth = -1)
         {
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
             Tuple<Tile, EvalResult> bestResult = null;
             int currentNormalDistance;
             var currentDistance = calcDistance(out currentNormalDistance);
+            options = null;
             if (depth == -1)
             {
+                options = new List<Tuple<Tile, EvalResult>>();
                 Trace.WriteLine("Distance: " + currentDistance);
             }
 
@@ -263,6 +271,7 @@ namespace Tenhou
                         result.DiscardedDoraCount = doraValue(tile);
                         if (depth == -1)
                         {
+                            options.Add(Tuple.Create(tile, result));
                             Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}{3}", 
                                 tile.Name, 
                                 result.E_PromotionCount.ToString(", ", c => c.ToString("F0")), 

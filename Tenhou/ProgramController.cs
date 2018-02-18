@@ -69,7 +69,7 @@ namespace Tenhou
             Trace.TraceInformation("Program input: {0}", message);
         }
 
-        protected override void OnDraw(Tile tile)
+        public override void OnDraw(Tile tile)
         {
             Send(string.Format("draw {0}", tile.Name));
         }

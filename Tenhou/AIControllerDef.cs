@@ -15,13 +15,13 @@ namespace Tenhou
         private bool shouldDef(EvalResult evalResult, Tile discardTile)
         {
             return gameData.players.Any(p => defLevel(p) >= 4)
-                    && (evalResult.Distance >= 2 && evalResult.E_Point < 8000 
-                        || evalResult.Distance == 1 && evalResult.E_Point < 4000 
+                    && (evalResult.Distance >= 2 && (evalResult.E_Point < 8000 || evalResult.E_PromotionCount[0] <= 15)
+                        || evalResult.Distance == 1 && (evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 9)
                         || (evalResult.Distance == 0 && evalResult.E_Point < 2000 || gameData.remainingTile / 4 <= evalResult.Distance * 2)
                             && (discardTile == null || evalDef(discardTile).Risk > 15))
                 || gameData.players.Any(p => defLevel(p) >= 2)
-                    && (evalResult.Distance >= 2 && evalResult.E_Point < 4000 
-                        || evalResult.Distance == 1 && evalResult.E_Point < 2000 
+                    && (evalResult.Distance >= 2 && (evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 15)
+                        || evalResult.Distance == 1 && (evalResult.E_Point < 2000 || evalResult.E_PromotionCount[0] <= 9)
                         || (evalResult.Distance == 0 && evalResult.E_Point < 1000 || evalResult.Distance > 0 && gameData.remainingTile / 4 <= evalResult.Distance * 2)
                             && (discardTile == null || evalDef(discardTile).Risk > 15))
                 || gameData.players.Any(p => defLevel(p) >= 1)
@@ -56,14 +56,14 @@ namespace Tenhou
             }
         }
 
-        public Tile chooseDiscardForDef()
+        public Tile chooseDiscardForDef(List<Tuple<Tile, EvalResult>> options)
         {
             DefEvalResult defEvalResult;
-            var res = chooseDiscardForDef(out defEvalResult);
+            var res = chooseDiscardForDef(out defEvalResult, options);
             return res;
         }
 
-        private Tile chooseDiscardForDef(out DefEvalResult defEvalResult)
+        private Tile chooseDiscardForDef(out DefEvalResult defEvalResult, List<Tuple<Tile, EvalResult>> options)
         {
             var evalResults = new Dictionary<string, DefEvalResult>();
             Tuple<Tile, DefEvalResult> bestResult = null;
@@ -73,8 +73,9 @@ namespace Tenhou
             {
                 if (!evalResults.ContainsKey(tile.Name))
                 {
-                    var result = evalResults[tile.Name] = evalDef(tile);
-                    Trace.WriteLine(string.Format("Option: discard {0}, Risk: {1:0.##}{2}", tile.Name, result.Risk, result.Risk == 0 ? "(" + result.RiskForOthers.ToString("0.##") + ")" : ""));
+                    var atkEvalResult = options.Where(tuple => tuple.Item1.Name == tile.Name).DefaultIfEmpty(Tuple.Create<Tile, EvalResult>(null, null)).First().Item2;
+                    var result = evalResults[tile.Name] = evalDef(tile, atkEvalResult);
+                    Trace.WriteLine(string.Format("Option: discard {0}, Risk: {1:0.##}{2}{3}", tile.Name, result.Risk, result.Risk == 0 ? "(" + result.RiskForOthers.ToString("0.##") + ")" : "", result.Bonus != 0 ? "[-" + result.Bonus.ToString("0.##") + "]" : ""));
                     if (bestResult == null
                         || defEvalResultComp.Compare(result, bestResult.Item2) > 0)
                     {
@@ -83,18 +84,19 @@ namespace Tenhou
                 }
             }
 
-            Trace.WriteLine(string.Format("BestResult: discard {0}, Risk: {1:0.##}{2}", bestResult.Item1.Name, bestResult.Item2.Risk, bestResult.Item2.Risk == 0 ? "(" + bestResult.Item2.RiskForOthers.ToString("0.##") + ")" : ""));
+            Trace.WriteLine(string.Format("BestResult: discard {0}, Risk: {1:0.##}{2}{3}", bestResult.Item1.Name, bestResult.Item2.Risk, bestResult.Item2.Risk == 0 ? "(" + bestResult.Item2.RiskForOthers.ToString("0.##") + ")" : "", bestResult.Item2.Bonus != 0 ? "[-" + bestResult.Item2.Bonus.ToString("0.##") + "]" : ""));
             defEvalResult = bestResult.Item2;
             return bestResult.Item1;
         }
 
-        public DefEvalResult evalDef(Tile tile)
+        public DefEvalResult evalDef(Tile tile, EvalResult atkEvalResult = null)
         {
             var res = new DefEvalResult();
             var defTargets = gameData.players.Where(p => defLevel(p) > 0);
             res.Risk = defTargets.Sum(p => evalDef(tile, p).Risk * defLevel(p)) / defTargets.Sum(p => defLevel(p));
             var others = gameData.players.Where(p => p != player && defLevel(p) == 0);
             res.RiskForOthers = others.Count() > 0 ? others.Average(p => evalDef(tile, p).Risk) : 0;
+            res.Bonus = atkEvalResult != null ? atkEvalResult.E_Point / 800 : 0;
             return res;
         }
 
@@ -445,7 +447,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = y.Risk.CompareTo(x.Risk)) != 0)
+                else if ((res = (y.Risk - y.Bonus).CompareTo(x.Risk - x.Bonus)) != 0)
                 {
                     return res;
                 }

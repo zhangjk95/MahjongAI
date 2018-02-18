@@ -10,5 +10,6 @@ namespace Tenhou.Models
     {
         public double Risk { get; set; }
         public double RiskForOthers { get; set; }
+        public double Bonus { get; set; }
     }
 }
