@@ -95,9 +95,31 @@ namespace Tenhou
             ai.OnWait(new Tile(91), client.gameData.players[3]);
         }
 
+        static void test6()
+        {
+            var client = new TenhouClient("");
+            client.gameData = new GameData();
+            client.gameData.direction = Direction.E;
+            client.gameData.players[2].direction = Direction.E;
+            client.gameData.players[3].direction = Direction.S;
+            client.gameData.players[0].direction = Direction.W;
+            client.gameData.players[1].direction = Direction.N;
+            client.gameData.dora = new Dora() { new Tile(80), new Tile(0) };
+            client.player.hand = new Hand() {
+                new Tile(17), new Tile(20), new Tile(36), new Tile(37),
+                new Tile(64), new Tile(68), new Tile(84), new Tile(85),
+                new Tile(96), new Tile(100), new Tile(104), new Tile(132),
+                new Tile(133)
+
+            };
+            client.player.fuuro = new Fuuro() { };
+            var ai = new AIController(client);
+            ai.OnWait(new Tile(86), client.gameData.players[2]);
+        }
+
         static void Main()
         {
-            test5();
+            test6();
         }
     }
 }

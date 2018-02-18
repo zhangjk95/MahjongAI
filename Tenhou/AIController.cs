@@ -45,7 +45,9 @@ namespace Tenhou
 
         public override void OnWait(Tile tile, Player fromPlayer)
         {
+            fromPlayer.graveyard.Add(tile);
             EvalResult currentEvalResult = eval13();
+            fromPlayer.graveyard.Remove(tile);
             player.hand.Add(tile);
             EvalResult currentEvalResult14 = eval14(tile, 1);
             player.hand.Remove(tile);
