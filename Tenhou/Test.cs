@@ -51,5 +51,53 @@ namespace Tenhou
             Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}", type, kui, hai0, hai1, hai2, hai3);
             Console.ReadKey();
         }
+
+        static void test4()
+        {
+            var client = new TenhouClient("");
+            client.gameData = new GameData();
+            client.gameData.direction = Direction.E;
+            client.gameData.players[2].direction = Direction.E;
+            client.gameData.players[3].direction = Direction.S;
+            client.gameData.players[0].direction = Direction.W;
+            client.gameData.players[1].direction = Direction.N;
+            client.gameData.dora = new Dora() { new Tile(84), new Tile(89), new Tile(104) };
+            client.player.hand = new Hand() {
+                new Tile(4), new Tile(8), new Tile(12), new Tile(28),
+                new Tile(29), new Tile(96), new Tile(100)
+            };
+            client.player.fuuro = new Fuuro() {
+                new FuuroGroup(FuuroType.pon) { new Tile(88), new Tile(90), new Tile(91) },
+                new FuuroGroup(FuuroType.minkan) { new Tile(60), new Tile(61), new Tile(62), new Tile(63) },
+            };
+            var ai = new AIController(client);
+            ai.OnWait(new Tile(105), client.gameData.players[3]);
+        }
+
+        static void test5()
+        {
+            var client = new TenhouClient("");
+            client.gameData = new GameData();
+            client.gameData.direction = Direction.E;
+            client.gameData.players[2].direction = Direction.E;
+            client.gameData.players[3].direction = Direction.S;
+            client.gameData.players[0].direction = Direction.W;
+            client.gameData.players[1].direction = Direction.N;
+            client.gameData.dora = new Dora() { new Tile(84), new Tile(89) };
+            client.player.hand = new Hand() {
+                new Tile(4), new Tile(8), new Tile(12), new Tile(28),
+                new Tile(29), new Tile(60), new Tile(61), new Tile(62),
+                new Tile(80), new Tile(88), new Tile(90), new Tile(96),
+                new Tile(100)
+            };
+            client.player.fuuro = new Fuuro() { };
+            var ai = new AIController(client);
+            ai.OnWait(new Tile(91), client.gameData.players[3]);
+        }
+
+        static void Main()
+        {
+            test5();
+        }
     }
 }

@@ -74,7 +74,7 @@ namespace Tenhou
             Send(string.Format("draw {0}", tile.Name));
         }
 
-        protected override void OnWait(Tile tile, Player fromPlayer)
+        public override void OnWait(Tile tile, Player fromPlayer)
         {
             Send(string.Format("wait {0} {1}", tile.Name, fromPlayer.id));
         }

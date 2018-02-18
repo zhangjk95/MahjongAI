@@ -37,7 +37,7 @@ namespace Tenhou
             showCurrentState();
         }
 
-        protected override void OnWait(Tile tile, Player fromPlayer)
+        public override void OnWait(Tile tile, Player fromPlayer)
         {
             Trace.WriteLine(string.Format("wait {0} from player({1})", tile.Name, fromPlayer.id));
             showCurrentState();

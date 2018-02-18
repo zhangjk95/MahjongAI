@@ -43,7 +43,7 @@ namespace Tenhou
             }
         }
 
-        protected override void OnWait(Tile tile, Player fromPlayer)
+        public override void OnWait(Tile tile, Player fromPlayer)
         {
             EvalResult currentEvalResult = eval13();
             player.hand.Add(tile);
@@ -95,9 +95,10 @@ namespace Tenhou
                         discardTile = chooseDiscardForAtk(out tmpResult);
 
                         // 不能食替
-                        if (discardTile.GenaralId == tile.GenaralId 
-                            || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId - 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId - 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId - 1)
-                            || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId + 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId + 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId + 1))
+                        if (discardTile != null 
+                            && (discardTile.GenaralId == tile.GenaralId 
+                                || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId - 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId - 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId - 1)
+                                || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId + 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId + 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId + 1)))
                         {
                             tmpResult = null;
                         }
@@ -296,13 +297,27 @@ namespace Tenhou
 
             if (depth == -1)
             {
-                Trace.WriteLine(string.Format("BestResult: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}, Distance: {3}", 
-                    bestResult.Item1.Name, 
-                    bestResult.Item2.E_PromotionCount.ToString(", ", c => c.ToString("F0")), 
-                    bestResult.Item2.E_Point, 
+                if (bestResult == null || bestResult.Item1 == null || bestResult.Item2 == null)
+                {
+                    Trace.WriteLine("BestResult: null");
+                }
+                else
+                {
+                    Trace.WriteLine(string.Format("BestResult: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}, Distance: {3}",
+                    bestResult.Item1.Name,
+                    bestResult.Item2.E_PromotionCount.ToString(", ", c => c.ToString("F0")),
+                    bestResult.Item2.E_Point,
                     bestResult.Item2.Distance,
                     bestResult.Item2.E_NormalPromitionCount != bestResult.Item2.E_PromotionCount[0] ? "(" + bestResult.Item2.E_NormalPromitionCount + ")" : ""));
+                }
             }
+            
+            if (bestResult == null)
+            {
+                evalResult = null;
+                return null;
+            }
+
             evalResult = bestResult.Item2;
             return bestResult.Item1;
         }
@@ -369,6 +384,11 @@ namespace Tenhou
 
             res.Furiten = promotionTiles.Exists(tuple => player.graveyard.Exists(t => t.GenaralId == tuple.Item1.GenaralId));
 
+            if (promotionTiles.Count > 0)
+            {
+                res.E_Point = promotionTiles.Sum(tuple => tuple.Item2.E_Point) / promotionTiles.Count; // 计算期望得点（如果有得点为0的情况，那么也计入，拉低期望得点）
+            }
+
             if (res.Distance < depth) // 在可以算出得点的情况下
             {
                 promotionTiles.RemoveAll(tuple => tuple.Item2.E_Point <= 0); // 把得点为0的情况去掉（不算进张）
@@ -378,10 +398,6 @@ namespace Tenhou
             for (var i = 0; i < Math.Min(depth - 1, res.Distance); i++)
             {
                 res.E_PromotionCount.Add(promotionTiles.Count > 0 ? promotionTiles.Sum(tuple => tuple.Item2.E_PromotionCount[i]) / promotionTiles.Count : 0);
-            }
-            if (promotionTiles.Count > 0)
-            {
-                res.E_Point = promotionTiles.Sum(tuple => tuple.Item2.E_Point) / promotionTiles.Count;
             }
             
             return res;

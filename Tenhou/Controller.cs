@@ -78,7 +78,7 @@ namespace Tenhou
             
         }
 
-        protected virtual void OnWait(Tile tile, Player fromPlayer)
+        public virtual void OnWait(Tile tile, Player fromPlayer)
         {
             
         }
