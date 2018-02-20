@@ -93,7 +93,7 @@ namespace Tenhou
         {
             Trace.WriteLine(string.Format("{0}{1} {2}, points: {3}",
                 who == null ? "Ryuukyoku" : who == fromWho ? "Tsumo" : "Ron",
-                who != null ? " " + who.id + "←" + fromWho.id : " ",
+                who != null ? " " + who.id + "<--" + fromWho.id : " ",
                 point,
                 string.Join(", ", players.Select(player => player.point).Zip(pointDeltas, (point1, delta) => string.Format("{0} ({1}{2})", point1, delta > 0 ? "+" : "", delta)))));
         }
