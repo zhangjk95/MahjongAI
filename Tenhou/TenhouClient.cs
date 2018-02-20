@@ -409,7 +409,7 @@ namespace Tenhou
             MatchCollection pointCollection = new Regex(@"\d+").Matches(ten);
             for (int i = 0; i < 4; i++)
             {
-                gameData.players[i].point = int.Parse(pointCollection[i].Value) * 1000;
+                gameData.players[i].point = int.Parse(pointCollection[i].Value) * 100;
                 gameData.players[i].reached = false;
                 gameData.players[i].graveyard = new Graveyard();
                 gameData.players[i].fuuro = new Fuuro();
