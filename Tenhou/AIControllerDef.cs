@@ -12,7 +12,7 @@ namespace Tenhou
     {
         private DefEvalResultComp defEvalResultComp = new DefEvalResultComp();
 
-        private bool shouldDef(EvalResult evalResult, Tile discardTile)
+        private bool shouldDef(EvalResult evalResult, Tile discardTile = null)
         {
             return gameData.players.Any(p => defLevel(p) >= 4)
                     && (evalResult.Distance >= 2 && (evalResult.E_Point < 8000 || evalResult.E_PromotionCount[0] <= 15)

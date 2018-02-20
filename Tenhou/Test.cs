@@ -141,7 +141,7 @@ namespace Tenhou
             ai.OnDraw(new Tile(132));
         }
 
-        static void Main()
+        static void Main2()
         {
             test7();
         }

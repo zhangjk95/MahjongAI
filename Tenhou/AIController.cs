@@ -190,7 +190,8 @@ namespace Tenhou
 
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
                 && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
-                && evalResult.E_PromotionCount[0] > 0; // 没有空听
+                && evalResult.E_PromotionCount[0] > 0 // 没有空听
+                && !shouldDef(evalResult); // 没有在防守状态
         }
 
         private bool shouldAnKan(Tile tile)
@@ -226,8 +227,10 @@ namespace Tenhou
         private bool shouldNaki(EvalResult resultBefore, EvalResult resultAfter)
         {
             return resultBefore.Distance >= 3 && hasYakuhai()
-                || resultBefore.Distance <= 2 && (resultBefore.E_Point - resultAfter.E_Point) <= 0 && resultAfter.E_Point > 0
-                || resultBefore.Distance <= 2 && ((resultBefore.E_Point - resultAfter.E_Point) < resultBefore.E_Point * 3 / 5 || (resultBefore.E_Point - resultAfter.E_Point) < 2000) && resultAfter.E_Point > 0
+                || resultBefore.Distance <= 2 && resultAfter.E_Point > resultBefore.E_Point && resultAfter.E_Point > 0
+                || resultBefore.Distance <= 2 && resultAfter.E_Point > resultBefore.E_Point * (0.8 - (17 - gameData.remainingTile / 4) * 0.02) && resultAfter.E_Point > 0
+                    && resultBefore.Distance > resultAfter.Distance
+                || resultBefore.Distance <= 2 && (resultAfter.E_Point > resultBefore.E_Point * (0.4 - (17 - gameData.remainingTile / 4) * 0.02) || (resultBefore.E_Point - resultAfter.E_Point) < 2000) && resultAfter.E_Point > 0
                     && resultBefore.Distance > resultAfter.Distance && (resultBefore.E_PromotionCount[1] <= resultAfter.E_PromotionCount[0] || resultBefore.VisibleFuuroCount > 0);
         }
 

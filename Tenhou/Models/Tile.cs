@@ -12,6 +12,18 @@ namespace Tenhou.Models
 
         private int id;
         private bool isTakenAway;
+        static private HashSet<int> usedIDs = new HashSet<int>();
+
+        public Tile(int id)
+        {
+            this.id = id;
+        }
+
+        public Tile(string name)
+        {
+            this.id = map.First(pair => pair.Value == name && !usedIDs.Contains(pair.Key)).Key;
+            usedIDs.Add(this.id);
+        }
 
         public int Id
         {
@@ -79,12 +91,7 @@ namespace Tenhou.Models
             {
                 return map[id].Length > 2;
             }
-        }
-
-        public Tile(int id)
-        {
-            this.id = id;
-        }
+        }        
 
         public int getNextGeneralId()
         {
