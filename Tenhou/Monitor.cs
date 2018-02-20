@@ -79,6 +79,24 @@ namespace Tenhou
             Trace.WriteLine("Game ended.");
         }
 
+        protected override void OnInit(bool continued, Direction direction, int seq, int seq2, Player[] players)
+        {
+            Trace.WriteLine(string.Format("{0} {1}{2}{3} points: {4}", 
+                !continued ? "Init" : "Reinit", 
+                direction, 
+                seq, 
+                seq2 != 0 ? "(" + seq2 + ")" : "", 
+                string.Join(", ", players.Select(player => player.point))));
+        }
+
+        protected override void OnAgari(Player who, Player fromWho, int point, int[] pointDeltas, Player[] players)
+        {
+            Trace.WriteLine(string.Format("{0}{1} points: {2}",
+                who == null ? "Ryuukyoku" : who == fromWho ? "Tsumo" : "Ron",
+                who != null ? " " + who.id + "←" + fromWho.id : " ",
+                string.Join(", ", players.Select(player => player.point).Zip(pointDeltas, (point1, delta) => string.Format("{0} ({1}{2})", point1, delta > 0 ? "+" : "", delta)))));
+        }
+
         protected override void OnUnknownEvent(string str)
         {
             Trace.WriteLine(str);

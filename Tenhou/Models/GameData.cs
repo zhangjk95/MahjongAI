@@ -12,6 +12,8 @@ namespace Tenhou.Models
         public Dora dora = new Dora();
         public Player[] players = new Player[4];
         public Direction direction;
+        public int seq;
+        public int seq2;
         public Tile lastTile;
         public int remainingTile;
 

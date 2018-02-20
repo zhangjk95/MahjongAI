@@ -36,6 +36,8 @@ namespace Tenhou
             client.OnLogin += OnLogin;
             client.OnClose += OnClose;
             client.OnConnectionException += OnConnectionException;
+            client.OnInit += OnInit;
+            client.OnAgari += OnAgari;
             client.OnNaki += OnNaki;
             client.OnReach += OnReach;
             client.OnUnknownEvent += OnUnknownEvent;
@@ -52,6 +54,8 @@ namespace Tenhou
             client.OnLogin -= OnLogin;
             client.OnClose -= OnClose;
             client.OnConnectionException -= OnConnectionException;
+            client.OnInit -= OnInit;
+            client.OnAgari -= OnAgari;
             client.OnNaki -= OnNaki;
             client.OnReach -= OnReach;
             client.OnUnknownEvent -= OnUnknownEvent;
@@ -94,6 +98,16 @@ namespace Tenhou
         }
 
         protected virtual void OnNaki(Player player, FuuroGroup fuuro)
+        {
+
+        }
+
+        protected virtual void OnInit(bool continued, Direction direction, int seq, int seq2, Player[] players)
+        {
+
+        }
+
+        protected virtual void OnAgari(Player who, Player fromWho, int point, int[] pointDeltas, Player[] players)
         {
 
         }

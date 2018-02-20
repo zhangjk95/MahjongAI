@@ -24,6 +24,8 @@ namespace Tenhou
         public event Action OnConnectionException;
         public event Action<bool> OnGameStart;
         public event Action OnGameEnd;
+        public event Action<bool, Direction, int, int, Player[]> OnInit;
+        public event Action<Player, Player, int, int[], Player[]> OnAgari;
         public event Action<Player, FuuroGroup> OnNaki;
         public event Action<Player> OnReach;
         public event Action<string> OnUnknownEvent;
@@ -199,11 +201,16 @@ namespace Tenhou
         private void StartRecv() {
             while (true) {
                 string str = "";
+                DateTime startTime = DateTime.Now;
                 try
                 {
                     do
                     {
                         str += client.Receive();
+                        if (DateTime.Now - startTime > TimeSpan.FromSeconds(20))
+                        {
+                            throw new TimeoutException();
+                        }
                     } while (!str.EndsWith("\0") && !str.EndsWith(">"));
                 }
                 catch (Exception ex)
@@ -239,17 +246,34 @@ namespace Tenhou
             }
             else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
             {
+                Player who = null;
+                Player fromWho = null;
+                int point = 0;
+
                 if (reader.Name == "AGARI")
                 {
+                    who = gameData.players[int.Parse(reader["who"])];
+                    fromWho = gameData.players[int.Parse(reader["fromWho"])];
+                    point = int.Parse(reader["ten"].Split(',')[1]);
                     if (gameData.lastTile != null)
                     {
                         gameData.lastTile.IsTakenAway = true;
                     }
                 }
-                if (OnUnknownEvent != null)
+
+                var scFields = reader["sc"].Split(',').Select(str1 => int.Parse(str1)).ToArray();
+                int[] pointDeltas = new int[4];
+                for (var i = 0; i < 4; i++)
                 {
-                    OnUnknownEvent(str);
+                    gameData.players[i].point = scFields[i * 2] * 100;
+                    pointDeltas[i] = scFields[i * 2 + 1] * 100;
                 }
+                
+                if (OnAgari != null)
+                {
+                    OnAgari(who, fromWho, point, pointDeltas, gameData.players);
+                }
+
                 if (reader["owari"] != null)
                 {
                     Bye();
@@ -286,9 +310,9 @@ namespace Tenhou
                 gameData = new GameData();
                 HandleInit(reader["seed"], reader["ten"], reader["oya"], reader["hai"]);
                 HandleReinit(reader["m0"], reader["m1"], reader["m2"], reader["m3"], reader["kawa0"], reader["kawa1"], reader["kawa2"], reader["kawa3"]);
-                if (OnUnknownEvent != null)
+                if (OnInit != null)
                 {
-                    OnUnknownEvent(str);
+                    OnInit(reader.Name == "REINIT", gameData.direction, gameData.seq, gameData.seq2, gameData.players);
                 }
             }
             else if ((match = new Regex(@"T(\d+)").Match(reader.Name)).Success)
@@ -358,7 +382,9 @@ namespace Tenhou
 
         private void HandleInit(string seed, string ten, string oya, string hai)
         {
-            switch (int.Parse(new Regex(@"^(\d+)").Match(seed).Groups[1].Value))
+            var seedFields = seed.Split(',').Select(str => int.Parse(str)).ToArray();
+
+            switch (seedFields[0])
             {
                 case 0: case 1: case 2: case 3:
                     gameData.direction = Direction.E;
@@ -371,16 +397,19 @@ namespace Tenhou
                     break;
             }
 
+            gameData.seq = seedFields[0] % 4 + 1;
+            gameData.seq2 = seedFields[1];
+
             gameData.remainingTile = GameData.initialRemainingTile;
 
             gameData.dora.Clear();
-            int dora = int.Parse(new Regex(@"(\d+)$").Match(seed).Groups[1].Value);
+            int dora = seedFields.Last();
             gameData.dora.Add(new Tile(dora));
 
             MatchCollection pointCollection = new Regex(@"\d+").Matches(ten);
             for (int i = 0; i < 4; i++)
             {
-                gameData.players[i].point = int.Parse(pointCollection[i].Value);
+                gameData.players[i].point = int.Parse(pointCollection[i].Value) * 1000;
                 gameData.players[i].reached = false;
                 gameData.players[i].graveyard = new Graveyard();
                 gameData.players[i].fuuro = new Fuuro();
