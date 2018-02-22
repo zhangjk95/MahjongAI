@@ -20,7 +20,7 @@ namespace Tenhou
 
         static void Start(Config config)
         {
-            client = new TenhouClient(config.Id);
+            client = new TenhouClient(config);
 
             gameEnd.Reset();
 

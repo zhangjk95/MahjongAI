@@ -11,7 +11,7 @@ namespace Tenhou
     {
         static void test()
         {
-            var client = new TenhouClient("");
+            var client = new TenhouClient(new Config());
             client.gameData = new GameData();
             client.gameData.direction = Direction.E;
             client.gameData.players[2].direction = Direction.E;
@@ -47,14 +47,14 @@ namespace Tenhou
         static void test3()
         {
             int type, kui, hai0, hai1, hai2, hai3;
-            new TenhouClient("").decodeMeld(33039, out type, out kui, out hai0, out hai1, out hai2, out hai3);
+            new TenhouClient(new Config()).decodeMeld(33039, out type, out kui, out hai0, out hai1, out hai2, out hai3);
             Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}", type, kui, hai0, hai1, hai2, hai3);
             Console.ReadKey();
         }
 
         static void test4()
         {
-            var client = new TenhouClient("");
+            var client = new TenhouClient(new Config());
             client.gameData = new GameData();
             client.gameData.direction = Direction.E;
             client.gameData.players[2].direction = Direction.E;
@@ -76,7 +76,7 @@ namespace Tenhou
 
         static void test5()
         {
-            var client = new TenhouClient("");
+            var client = new TenhouClient(new Config());
             client.gameData = new GameData();
             client.gameData.direction = Direction.E;
             client.gameData.players[2].direction = Direction.E;
@@ -97,7 +97,7 @@ namespace Tenhou
 
         static void test6()
         {
-            var client = new TenhouClient("");
+            var client = new TenhouClient(new Config());
             client.gameData = new GameData();
             client.gameData.direction = Direction.E;
             client.gameData.players[2].direction = Direction.E;
@@ -119,7 +119,7 @@ namespace Tenhou
 
         static void test7()
         {
-            var client = new TenhouClient("");
+            var client = new TenhouClient(new Config());
             client.gameData = new GameData();
             client.gameData.direction = Direction.S;
             client.gameData.players[0].direction = Direction.N;

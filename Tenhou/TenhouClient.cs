@@ -32,6 +32,7 @@ namespace Tenhou
 
         public GameData gameData;
         public bool connected;
+        public Config config;
 
         public Player player
         {
@@ -45,9 +46,10 @@ namespace Tenhou
         private string username;
         private int lobby;
 
-        public TenhouClient(string username)
+        public TenhouClient(Config config)
         {
-            this.username = username;
+            this.config = config;
+            this.username = config.Id;
             this.lobby = 0;
         }
 

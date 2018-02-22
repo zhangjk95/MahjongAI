@@ -14,7 +14,7 @@ namespace Tenhou
 
         private bool shouldDef(EvalResult evalResult, Tile discardTile = null)
         {
-            return gameData.players.Any(p => defLevel(p) >= 4)
+            return (gameData.players.Any(p => defLevel(p) >= 4)
                     && (evalResult.Distance >= 2 && (evalResult.E_Point < 8000 || evalResult.E_PromotionCount[0] <= 15)
                         || evalResult.Distance == 1 && (evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 9)
                         || (evalResult.Distance == 0 && evalResult.E_Point < 2000 || gameData.remainingTile / 4 <= evalResult.Distance * 2)
@@ -25,7 +25,8 @@ namespace Tenhou
                         || (evalResult.Distance == 0 && evalResult.E_Point < 1000 || evalResult.Distance > 0 && gameData.remainingTile / 4 <= evalResult.Distance * 2)
                             && (discardTile == null || evalDef(discardTile).Risk > 15))
                 || gameData.players.Any(p => defLevel(p) >= 1)
-                    && evalResult.Distance >= 2;
+                    && evalResult.Distance >= 2)
+                && !(gameData.isAllLast(client.config.GameType) && player.point == gameData.players.Min(p => p.point)); // 不是All Last四位
         }
 
         private int defLevel(Player forPlayer)

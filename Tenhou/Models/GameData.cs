@@ -25,6 +25,12 @@ namespace Tenhou.Models
             }
         }
 
+        public bool isAllLast(GameType gameType)
+        {
+            return gameType.HasFlag(GameType.Match_East) && (seq == 4 || direction == Direction.S)
+                || (direction == Direction.S && seq == 4 || direction == Direction.W);
+        }
+
         public GameData()
         {
             for (int i = 0; i < 4; i++)

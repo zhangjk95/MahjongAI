@@ -191,7 +191,8 @@ namespace Tenhou
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
                 && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
                 && evalResult.E_PromotionCount[0] > 0 // 没有空听
-                && !shouldDef(evalResult); // 没有在防守状态
+                && !shouldDef(evalResult) // 没有在防守状态
+                && !(gameData.isAllLast(client.config.GameType) && player.point == gameData.players.Max(p => p.point)); // 不是All Last Top 
         }
 
         private bool shouldAnKan(Tile tile)
