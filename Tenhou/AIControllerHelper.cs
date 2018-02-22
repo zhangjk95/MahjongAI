@@ -146,6 +146,25 @@ namespace Tenhou
             return gameData.isAllLast(client.config.GameType) && gameData.getPlayerByRanking(4) == player;
         }
 
+        // 自摸后针对的点数变化估计
+        private double pointGain(double e_point, Player target)
+        {
+            if (player.direction == Direction.E)
+            {
+                e_point *= 1.5 * (4 / 3);
+            }
+            else if (target.direction == Direction.E)
+            {
+                e_point *= 1.5;
+            }
+            else
+            {
+                e_point *= 1.25;
+            }
+
+            return e_point;
+        }
+
         private int calcPoint(Tile lastTile, bool riichi = true)
         {
             return MahjongHelper.getInstance().calcPoint(player.hand, lastTile, gameData.direction, player.direction, player.fuuro, gameData.dora, riichi && player.fuuro.VisibleCount == 0);

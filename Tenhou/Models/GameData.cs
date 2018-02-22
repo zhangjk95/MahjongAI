@@ -36,6 +36,11 @@ namespace Tenhou.Models
             return players.OrderByDescending(p => p, new PlayerComp(seq)).ElementAt(ranking - 1);
         }
 
+        public int getRankingByPlayer(Player player)
+        {
+            return Array.IndexOf(players.OrderByDescending(p => p, new PlayerComp(seq)).ToArray(), player) + 1;
+        }
+
         private class PlayerComp : IComparer<Player>
         {
             private int seq;

@@ -186,11 +186,20 @@ namespace Tenhou
             player.graveyard.Remove(discardTile);
             player.hand.Add(discardTile);
 
+            bool changeRanking = false;
+            if (!isAllLastTop()) // 如果是All last top，不会改变顺位
+            {
+                var target = gameData.getPlayerByRanking(gameData.getRankingByPlayer(player) - 1);
+                var pointGainWithReach = pointGain(evalResult.E_Point, target);
+                var pointGainWithoutReach = pointGain(evalResultWithoutReach.E_Point, target);
+                changeRanking = pointGainWithReach + player.point >= target.point && pointGainWithoutReach + player.point < target.point;
+            }
+
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
                 && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
                 && evalResult.E_PromotionCount[0] > 0 // 没有空听
                 && !shouldDef(evalResult) // 没有在防守状态
-                && !(isAllLastTop() && evalResultWithoutReach.E_Point > 0); // 不是All last top 
+                && !(gameData.isAllLast(client.config.GameType) && !changeRanking && evalResultWithoutReach.E_Point > 0); // 如果All last且立直不改变顺位就不立直
         }
 
         private bool shouldAnKan(Tile tile)
