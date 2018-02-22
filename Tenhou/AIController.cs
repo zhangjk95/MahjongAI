@@ -13,8 +13,6 @@ namespace Tenhou
     {
         private const int defaultDepth = 3;
 
-        private EvalResultComp evalResultComp = new EvalResultComp();
-
         public AIController(TenhouClient client): base(client)
         {
             MahjongHelper.getInstance();
@@ -109,7 +107,7 @@ namespace Tenhou
                     {
                         tmpResult = eval13();
                     }
-                    if (tmpResult != null && !shouldDef(tmpResult, discardTile) && shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0)
+                    if (tmpResult != null && !shouldDef(tmpResult, discardTile) && shouldNaki(currentEvalResult, tmpResult) && new EvalResultComp(!isAllLastTop()).Compare(tmpResult, bestResult.Item3) > 0) // All last top 不比较得点
                     {
                         bestResult = Tuple.Create(candidate, discardTile, tmpResult);
                     }
@@ -192,7 +190,7 @@ namespace Tenhou
                 && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
                 && evalResult.E_PromotionCount[0] > 0 // 没有空听
                 && !shouldDef(evalResult) // 没有在防守状态
-                && !(gameData.isAllLast(client.config.GameType) && player.point == gameData.players.Max(p => p.point)); // 不是All Last Top 
+                && !(isAllLastTop() && evalResultWithoutReach.E_Point > 0); // 不是All last top 
         }
 
         private bool shouldAnKan(Tile tile)
@@ -232,7 +230,8 @@ namespace Tenhou
                 || resultBefore.Distance <= 2 && resultAfter.E_Point > resultBefore.E_Point * (0.8 - (17 - gameData.remainingTile / 4) * 0.02) && resultAfter.E_Point > 0
                     && resultBefore.Distance > resultAfter.Distance
                 || resultBefore.Distance <= 2 && (resultAfter.E_Point > resultBefore.E_Point * (0.4 - (17 - gameData.remainingTile / 4) * 0.02) || (resultBefore.E_Point - resultAfter.E_Point) < 2000) && resultAfter.E_Point > 0
-                    && resultBefore.Distance > resultAfter.Distance && (resultBefore.E_PromotionCount[1] <= resultAfter.E_PromotionCount[0] || resultBefore.VisibleFuuroCount > 0);
+                    && resultBefore.Distance > resultAfter.Distance && (resultBefore.E_PromotionCount[1] <= resultAfter.E_PromotionCount[0] || resultBefore.VisibleFuuroCount > 0)
+                || isAllLastTop() && hasYakuhai(); // All last top 速攻
         }
 
         public Tile chooseDiscardForAtk(int depth = -1)
@@ -249,6 +248,7 @@ namespace Tenhou
 
         private Tile chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, int depth = -1)
         {
+            EvalResultComp evalResultComp = new EvalResultComp(!isAllLastTop()); // All last top 不比较得点
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
             Tuple<Tile, EvalResult> bestResult = null;
@@ -445,6 +445,12 @@ namespace Tenhou
         private class EvalResultComp : IComparer<EvalResult>
         {
             private E_PromotionCountComp e_PromotionComp = new E_PromotionCountComp();
+            private bool comparePoint;
+
+            public EvalResultComp(bool comparePoint)
+            {
+                this.comparePoint = comparePoint;
+            }
 
             public int Compare(EvalResult x, EvalResult y)
             {
@@ -485,7 +491,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = (x.E_Point * x.E_PromotionCount.Product(n => n)).CompareTo(y.E_Point * y.E_PromotionCount.Product(n => n))) != 0) // 期望得点数 * 进张数的积
+                else if (comparePoint && (res = (x.E_Point * x.E_PromotionCount.Product(n => n)).CompareTo(y.E_Point * y.E_PromotionCount.Product(n => n))) != 0) // 期望得点数 * 进张数的积，如comparePoint为false则不比较
                 {
                     return res;
                 }

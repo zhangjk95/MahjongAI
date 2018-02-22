@@ -26,7 +26,7 @@ namespace Tenhou
                             && (discardTile == null || evalDef(discardTile).Risk > 15))
                 || gameData.players.Any(p => defLevel(p) >= 1)
                     && evalResult.Distance >= 2)
-                && !(gameData.isAllLast(client.config.GameType) && player.point == gameData.players.Min(p => p.point)); // 不是All Last四位
+                && !isAllLastBottom(); // 不是All last四位
         }
 
         private int defLevel(Player forPlayer)

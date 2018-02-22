@@ -31,6 +31,34 @@ namespace Tenhou.Models
                 || (direction == Direction.S && seq == 4 || direction == Direction.W);
         }
 
+        public Player getPlayerByRanking(int ranking)
+        {
+            return players.OrderByDescending(p => p, new PlayerComp(seq)).ElementAt(ranking - 1);
+        }
+
+        private class PlayerComp : IComparer<Player>
+        {
+            private int seq;
+
+            public PlayerComp(int seq)
+            {
+                this.seq = seq;
+            }
+
+            public int Compare(Player x, Player y)
+            {
+                int res = 0;
+                if ((res = x.point.CompareTo(y.point)) != 0)
+                {
+                    return res;
+                }
+                else
+                {
+                    return -(((int)x.direction + seq - 2) % 4).CompareTo(((int)y.direction + seq - 2) % 4);
+                }
+            }
+        }
+
         public GameData()
         {
             for (int i = 0; i < 4; i++)

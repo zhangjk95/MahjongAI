@@ -136,6 +136,16 @@ namespace Tenhou
             return false;
         }
 
+        private bool isAllLastTop()
+        {
+            return gameData.isAllLast(client.config.GameType) && gameData.getPlayerByRanking(1) == player;
+        }
+
+        private bool isAllLastBottom()
+        {
+            return gameData.isAllLast(client.config.GameType) && gameData.getPlayerByRanking(4) == player;
+        }
+
         private int calcPoint(Tile lastTile, bool riichi = true)
         {
             return MahjongHelper.getInstance().calcPoint(player.hand, lastTile, gameData.direction, player.direction, player.fuuro, gameData.dora, riichi && player.fuuro.VisibleCount == 0);
