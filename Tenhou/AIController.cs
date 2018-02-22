@@ -187,7 +187,7 @@ namespace Tenhou
             player.hand.Add(discardTile);
 
             bool changeRanking = false;
-            if (!isAllLastTop()) // 如果是All last top，不会改变顺位
+            if (gameData.getPlayerByRanking(1) != player) // 如果是top，不会改变顺位
             {
                 var target = gameData.getPlayerByRanking(gameData.getRankingByPlayer(player) - 1);
                 var pointGainWithReach = pointGain(evalResult.E_Point, target);
