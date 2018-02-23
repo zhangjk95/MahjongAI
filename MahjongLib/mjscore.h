@@ -10,9 +10,9 @@
 #define __MJSCORE__
 
 //汎用ヘッダ
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <string>
 #include <iostream>
 #include <cstring>

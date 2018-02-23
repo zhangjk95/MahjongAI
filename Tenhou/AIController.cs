@@ -21,7 +21,7 @@ namespace Tenhou
         public override void OnDraw(Tile tile)
         {
             int distance = calcDistance();
-            if (distance == -1 && (player.fuuro.VisibleCount == 0 || calcPoint(tile, false) > 0))
+            if (distance == -1 && (player.fuuro.VisibleCount == 0 || calcPoint(tile, false, true) > 0))
             {
                 client.Tsumo();
             }
@@ -187,19 +187,53 @@ namespace Tenhou
             player.hand.Add(discardTile);
 
             bool changeRanking = false;
-            if (gameData.getPlayerByRanking(1) != player) // 如果是top，不会改变顺位
+            int rankingWithReach = 0;
+            int rankingWithoutReach = 0;
+            if (isAllLast())
             {
-                var target = gameData.getPlayerByRanking(gameData.getRankingByPlayer(player) - 1);
-                var pointGainWithReach = pointGain(evalResult.E_Point, target);
-                var pointGainWithoutReach = pointGain(evalResultWithoutReach.E_Point, target);
-                changeRanking = pointGainWithReach + player.point >= target.point && pointGainWithoutReach + player.point < target.point;
+                player.hand.Remove(discardTile);
+                player.graveyard.Add(discardTile);
+                rankingWithReach = expectedRankingWhenAgari(riichi: true);
+                rankingWithoutReach = expectedRankingWhenAgari(riichi: false);
+                changeRanking = rankingWithReach < rankingWithoutReach;
+                player.graveyard.Remove(discardTile);
+                player.hand.Add(discardTile);
+                Trace.WriteLine(string.Format("Expected Ranking: w/ reach {0}, w/o reach {1}", rankingWithReach, rankingWithoutReach));
             }
 
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
                 && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
                 && evalResult.E_PromotionCount[0] > 0 // 没有空听
                 && !shouldDef(evalResult) // 没有在防守状态
-                && !(gameData.isAllLast(client.config.GameType) && !changeRanking && evalResultWithoutReach.E_Point > 0); // 如果All last且立直不改变顺位就不立直
+                && !(isAllLast() && !changeRanking && !(player.direction == Direction.E && rankingWithoutReach > 1) && evalResultWithoutReach.E_Point > 0); // 如果All last且立直不改变顺位，除非是尾亲且和了也不是top，否则不立直
+        }
+
+        private int expectedRankingWhenAgari(bool riichi)
+        {
+            int res = gameData.getRankingByPlayer(player);
+            double extraPoint = gameData.seq2 * 100 + gameData.players.Count(p => p.reached) * 1000; // TODO: fix this
+            for (var i = res - 1; i >= 1; i--)
+            {
+                var target = gameData.getPlayerByRanking(i);
+
+                // target放铳
+                var point = eval13(1, riichi, tsumo: false).E_Point;
+                if (player.point + point + extraPoint + gameData.seq2 * 300 < target.point - point - gameData.seq2 * 300)
+                {
+                    break;
+                }
+
+                // 自摸
+                point = eval13(1, riichi, tsumo: true).E_Point;
+                if (player.point + point + extraPoint + gameData.seq2 * 300 < target.point - point * (player.direction == Direction.E ? 0.33 : target.direction == Direction.E ? 0.5 : 0.25) - gameData.seq2 * (target.direction == Direction.E ? 2 : 1))
+                {
+                    break;
+                }
+
+                res = i;
+            }
+
+            return res;
         }
 
         private bool shouldAnKan(Tile tile)
@@ -346,7 +380,7 @@ namespace Tenhou
             return bestResult.Item1;
         }
 
-        private EvalResult eval13(int depth = -1, bool riichi = true)
+        private EvalResult eval13(int depth = -1, bool riichi = true, bool tsumo = false)
         {
             var res = new EvalResult();
             int normalDistance;
@@ -385,7 +419,7 @@ namespace Tenhou
                         int tmpNormalDistance;
                         if (calcDistance(out tmpNormalDistance) < res.Distance)
                         {
-                            result = evalResults[tile.Name] = eval14(tile, depth, riichi);
+                            result = evalResults[tile.Name] = eval14(tile, depth, riichi, tsumo);
                         }
                         else
                         {
@@ -427,7 +461,7 @@ namespace Tenhou
             return res;
         }
 
-        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true)
+        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true, bool tsumo = false)
         {
             var res = new EvalResult();
             int normalDistance;
@@ -437,7 +471,7 @@ namespace Tenhou
             {
                 if (res.Distance == -1)
                 {
-                    res.E_Point = calcPoint(lastTile, riichi);
+                    res.E_Point = calcPoint(lastTile, riichi, tsumo);
                 }
                 res.E_PromotionCount = new List<double>();
             }

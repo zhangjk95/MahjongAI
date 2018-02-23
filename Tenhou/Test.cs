@@ -30,6 +30,8 @@ namespace Tenhou
             ai.chooseDiscardForAtk();
         }
 
+        // 无番和
+        // Expected: 0
         static void test2()
         {
             var point = MahjongHelper.getInstance().calcPoint(new Hand()
@@ -39,7 +41,7 @@ namespace Tenhou
                 new Tile(48), new Tile(52), new Tile(56),
                 new Tile(96), new Tile(100), new Tile(104),
                 new Tile(124), new Tile(125)
-            }, new Tile(40), Direction.E, Direction.E, new Fuuro(), new Dora { new Tile(68) }, false);
+            }, new Tile(40), Direction.E, Direction.S, new Fuuro(), new Dora { new Tile(68) }, false, false);
             Console.WriteLine(point);
             Console.ReadKey();
         }
@@ -95,11 +97,14 @@ namespace Tenhou
             ai.OnWait(new Tile(91), client.gameData.players[3]);
         }
 
+        // 鸣牌后付
+        // Expected: pon, not pass
         static void test6()
         {
             var client = new TenhouClient(new Config());
             client.gameData = new GameData();
             client.gameData.direction = Direction.E;
+            client.gameData.remainingTile = 60;
             client.gameData.players[2].direction = Direction.E;
             client.gameData.players[3].direction = Direction.S;
             client.gameData.players[0].direction = Direction.W;
@@ -117,11 +122,13 @@ namespace Tenhou
             ai.OnWait(new Tile(86), client.gameData.players[2]);
         }
 
+        // 兜牌
+        // Expected: discard 7z, not 8p
         static void test7()
         {
             var client = new TenhouClient(new Config());
             client.gameData = new GameData();
-            client.gameData.direction = Direction.S;
+            client.gameData.direction = Direction.E;
             client.gameData.players[0].direction = Direction.N;
             client.gameData.players[1].direction = Direction.E;
             client.gameData.players[2].direction = Direction.S;
@@ -141,9 +148,77 @@ namespace Tenhou
             ai.OnDraw(new Tile(132));
         }
 
+        // 立直不改变顺位
+        // Expected: No reach
+        static void test8()
+        {
+            Config config = new Config();
+            config.GameType |= GameType.Match_EastSouth;
+            var client = new TenhouClient(config);
+            client.gameData = new GameData();
+            client.gameData.direction = Direction.S;
+            client.gameData.seq = 4;
+            client.gameData.seq2 = 1;
+            client.gameData.remainingTile = 60;
+            client.gameData.players[0].direction = Direction.N;
+            client.gameData.players[1].direction = Direction.E;
+            client.gameData.players[2].direction = Direction.S;
+            client.gameData.players[3].direction = Direction.W;
+            client.gameData.players[0].point = 16400;
+            client.gameData.players[1].point = 12600;
+            client.gameData.players[2].point = 44200;
+            client.gameData.players[3].point = 26800;
+            client.gameData.dora = new Dora() { };
+            var drawed = new Tile("4s");
+            client.player.hand = new Hand() {
+                new Tile("1m"), new Tile("2m"), new Tile("3m"), new Tile("4m"),
+                new Tile("5m"), new Tile("1p"), new Tile("1p"), new Tile("2s"),
+                new Tile("3s"), drawed, new Tile("6s"), new Tile("7s"),
+                new Tile("7s"), new Tile("8s")
+            };
+            client.player.fuuro = new Fuuro() { };
+            var ai = new AIController(client);
+            ai.OnDraw(drawed);
+        }
+
+        // 兜牌时既考虑得点，也考虑牌效
+        // Expected: discard 6p, not 2s
+        static void test9()
+        {
+            Config config = new Config();
+            config.GameType |= GameType.Match_EastSouth;
+            var client = new TenhouClient(config);
+            client.gameData = new GameData();
+            client.gameData.direction = Direction.E;
+            client.gameData.seq = 4;
+            client.gameData.seq2 = 0;
+            client.gameData.remainingTile = 60;
+            client.gameData.players[0].direction = Direction.N;
+            client.gameData.players[1].direction = Direction.E;
+            client.gameData.players[2].direction = Direction.S;
+            client.gameData.players[3].direction = Direction.W;
+            client.gameData.players[0].point = 40000;
+            client.gameData.players[1].point = 20000;
+            client.gameData.players[2].point = 20000;
+            client.gameData.players[3].point = 20000;
+            client.gameData.players[1].reached = true;
+            client.gameData.players[1].graveyard = new Graveyard() { new Tile("6p"), new Tile("2s"), new Tile("9s"), new Tile("7z") };
+            client.gameData.dora = new Dora() { };
+            var drawed = new Tile("6p");
+            client.player.hand = new Hand() {
+                new Tile("6m"), new Tile("8m"), new Tile("1p"), new Tile("2p"),
+                new Tile("3p"), drawed, new Tile("2s"), new Tile("4s"),
+                new Tile("6s"), new Tile("7s"), new Tile("8s"), new Tile("9s"),
+                new Tile("7z"), new Tile("7z")
+            };
+            client.player.fuuro = new Fuuro() { };
+            var ai = new AIController(client);
+            ai.OnDraw(drawed);
+        }
+
         static void Main2()
         {
-            test7();
+            test9();
         }
     }
 }

@@ -66,6 +66,7 @@ namespace Tenhou
 
         private Tile chooseDiscardForDef(out DefEvalResult defEvalResult, List<Tuple<Tile, EvalResult>> options)
         {
+            EvalResultComp evalResultComp = new EvalResultComp(!isAllLastTop());
             var evalResults = new Dictionary<string, DefEvalResult>();
             Tuple<Tile, DefEvalResult> bestResult = null;
             Trace.WriteLine("Defense: " + gameData.players.Where(p => defLevel(p) > 0).ToString(", ", p => string.Format("player({0}):{1}", p.id, defLevel(p))));
@@ -85,6 +86,15 @@ namespace Tenhou
                 }
             }
 
+            foreach (var tile in player.hand)
+            {
+                var result = evalResults[tile.Name];
+                if (result.Risk - result.Bonus <= (bestResult.Item2.Risk - bestResult.Item2.Bonus) && evalResultComp.Compare(result.AtkEvalResult, bestResult.Item2.AtkEvalResult) > 0)
+                {
+                    bestResult = new Tuple<Tile, DefEvalResult>(tile, result);
+                }
+            }
+
             Trace.WriteLine(string.Format("BestResult: discard {0}, Risk: {1:0.##}{2}{3}", bestResult.Item1.Name, bestResult.Item2.Risk, bestResult.Item2.Risk == 0 ? "(" + bestResult.Item2.RiskForOthers.ToString("0.##") + ")" : "", bestResult.Item2.Bonus != 0 ? "[-" + bestResult.Item2.Bonus.ToString("0.##") + "]" : ""));
             defEvalResult = bestResult.Item2;
             return bestResult.Item1;
@@ -97,7 +107,8 @@ namespace Tenhou
             res.Risk = defTargets.Sum(p => evalDef(tile, p).Risk * defLevel(p)) / defTargets.Sum(p => defLevel(p));
             var others = gameData.players.Where(p => p != player && defLevel(p) == 0);
             res.RiskForOthers = others.Count() > 0 ? others.Average(p => evalDef(tile, p).Risk) : 0;
-            res.Bonus = atkEvalResult != null ? atkEvalResult.E_Point / 800 : 0;
+            res.Bonus = atkEvalResult == null ? 0 : isAllLastTop() ? 5 : atkEvalResult.E_Point / 800;
+            res.AtkEvalResult = atkEvalResult;
             return res;
         }
 
@@ -448,7 +459,7 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if ((res = (y.Risk - y.Bonus).CompareTo(x.Risk - x.Bonus)) != 0)
+                else if ((res = (y.Risk).CompareTo(x.Risk)) != 0)
                 {
                     return res;
                 }

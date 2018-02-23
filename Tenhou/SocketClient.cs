@@ -46,10 +46,17 @@ namespace Tenhou
 
         public void Send(string message)
         {
-            byte[] data = Encoding.ASCII.GetBytes(message + "\0");
-            stream.Write(data, 0, data.Length);
-            Trace.TraceInformation("Send: {0}", message);
+            try {
+                byte[] data = Encoding.ASCII.GetBytes(message + "\0");
+                stream.Write(data, 0, data.Length);
+                Trace.TraceInformation("Send: {0}", message);
+            }
+            catch (Exception ex)
+            {
+                throw new SocketException();
+            }
         }
+
         public string Receive()
         {
             byte[] data = new byte[bufferSize];

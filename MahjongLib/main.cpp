@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include "common.h"
 #include "syanten.h"
@@ -97,8 +98,18 @@ void handleMjscore() {
 	cin >> isRiichi;
 	mjscore.Is_Riichi(isRiichi);
 
+	int tsumoAgari;
+	cin >> tsumoAgari;
+	mjscore.Set_Tumoagari(tsumoAgari);
+
 	mjscore.Run();
-	cout << (mjscore.Get_ErrorCode() == 0 ? mjscore.Get_KoRon() : 0) << endl;
+	cout << 
+		(mjscore.Get_ErrorCode() != 0 ? 0 :
+			direction == 31 && tsumoAgari ? mjscore.Get_OyaTumo() * 3 :
+			direction == 31 ? mjscore.Get_OyaRon() :
+			tsumoAgari ? mjscore.Get_KoTumoKo() * 2 + mjscore.Get_KoTumoOya() :
+			mjscore.Get_KoRon()) << 
+		endl;
 }
 
 void initMjscore() {

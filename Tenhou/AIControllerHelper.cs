@@ -136,14 +136,19 @@ namespace Tenhou
             return false;
         }
 
+        private bool isAllLast()
+        {
+            return gameData.isAllLast(client.config.GameType);
+        }
+
         private bool isAllLastTop()
         {
-            return gameData.isAllLast(client.config.GameType) && gameData.getPlayerByRanking(1) == player;
+            return isAllLast() && gameData.getPlayerByRanking(1) == player;
         }
 
         private bool isAllLastBottom()
         {
-            return gameData.isAllLast(client.config.GameType) && gameData.getPlayerByRanking(4) == player;
+            return isAllLast() && gameData.getPlayerByRanking(4) == player;
         }
 
         // 自摸后针对的点数变化估计
@@ -165,9 +170,9 @@ namespace Tenhou
             return e_point;
         }
 
-        private int calcPoint(Tile lastTile, bool riichi = true)
+        private int calcPoint(Tile lastTile, bool riichi = true, bool tsumoAgari = false)
         {
-            return MahjongHelper.getInstance().calcPoint(player.hand, lastTile, gameData.direction, player.direction, player.fuuro, gameData.dora, riichi && player.fuuro.VisibleCount == 0);
+            return MahjongHelper.getInstance().calcPoint(player.hand, lastTile, gameData.direction, player.direction, player.fuuro, gameData.dora, riichi && player.fuuro.VisibleCount == 0, tsumoAgari && player.fuuro.VisibleCount == 0);
         }
     }
 }

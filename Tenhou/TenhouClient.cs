@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
@@ -229,156 +230,162 @@ namespace Tenhou
 
         private void HandleXML(string str)
         {
-            var readerSettings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
-            var reader = XmlReader.Create(new StringReader(str), readerSettings);
-            reader.Read();
-            if (reader.NodeType != XmlNodeType.Element)
-            {
-                return;
-            }
-
-            Match match;
-            if (reader.Name == "REJOIN")
-            {
-                client.Send(str.Replace("REJOIN", "JOIN"));
-            }
-            else if (reader.Name == "GO")
-            {
-                client.Send("<GOK />");
-            }
-            else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
-            {
-                Player who = null;
-                Player fromWho = null;
-                int point = 0;
-
-                if (reader.Name == "AGARI")
+            try {
+                var readerSettings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
+                var reader = XmlReader.Create(new StringReader(str), readerSettings);
+                reader.Read();
+                if (reader.NodeType != XmlNodeType.Element)
                 {
-                    who = gameData.players[int.Parse(reader["who"])];
-                    fromWho = gameData.players[int.Parse(reader["fromWho"])];
-                    point = int.Parse(reader["ten"].Split(',')[1]);
-                    if (gameData.lastTile != null)
+                    return;
+                }
+
+                Match match;
+                if (reader.Name == "REJOIN")
+                {
+                    client.Send(str.Replace("REJOIN", "JOIN"));
+                }
+                else if (reader.Name == "GO")
+                {
+                    client.Send("<GOK />");
+                }
+                else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
+                {
+                    Player who = null;
+                    Player fromWho = null;
+                    int point = 0;
+
+                    if (reader.Name == "AGARI")
                     {
-                        gameData.lastTile.IsTakenAway = true;
+                        who = gameData.players[int.Parse(reader["who"])];
+                        fromWho = gameData.players[int.Parse(reader["fromWho"])];
+                        point = int.Parse(reader["ten"].Split(',')[1]);
+                        if (gameData.lastTile != null)
+                        {
+                            gameData.lastTile.IsTakenAway = true;
+                        }
+                    }
+
+                    var scFields = reader["sc"].Split(',').Select(str1 => int.Parse(str1)).ToArray();
+                    int[] pointDeltas = new int[4];
+                    for (var i = 0; i < 4; i++)
+                    {
+                        gameData.players[i].point = scFields[i * 2] * 100;
+                        pointDeltas[i] = scFields[i * 2 + 1] * 100;
+                    }
+
+                    if (OnAgari != null)
+                    {
+                        OnAgari(who, fromWho, point, pointDeltas, gameData.players);
+                    }
+
+                    if (reader["owari"] != null)
+                    {
+                        Bye();
+                        if (OnGameEnd != null)
+                        {
+                            OnGameEnd();
+                        }
+                    }
+                    else
+                    {
+                        NextReady();
                     }
                 }
-
-                var scFields = reader["sc"].Split(',').Select(str1 => int.Parse(str1)).ToArray();
-                int[] pointDeltas = new int[4];
-                for (var i = 0; i < 4; i++)
-                {
-                    gameData.players[i].point = scFields[i * 2] * 100;
-                    pointDeltas[i] = scFields[i * 2 + 1] * 100;
-                }
-                
-                if (OnAgari != null)
-                {
-                    OnAgari(who, fromWho, point, pointDeltas, gameData.players);
-                }
-
-                if (reader["owari"] != null)
-                {
-                    Bye();
-                    if (OnGameEnd != null)
-                    {
-                        OnGameEnd();
-                    }
-                }
-                else
+                else if (reader.Name == "TAIKYOKU")
                 {
                     NextReady();
-                }
-            }
-            else if (reader.Name == "TAIKYOKU")
-            {
-                NextReady();
-                string logID = reader["log"];
-                int oya = int.Parse(reader["oya"]);
-                SaveTenhouLog(logID, oya == 0 ? 0 : 4 - oya);
-                if (OnGameStart != null)
-                {
-                    OnGameStart(false);
-                }
-            }
-            else if (reader.Name == "SAIKAI")
-            {
-                if (OnGameStart != null)
-                {
-                    OnGameStart(true);
-                }
-            }
-            else if (reader.Name == "INIT" || reader.Name == "REINIT")
-            {
-                gameData = new GameData();
-                HandleInit(reader["seed"], reader["ten"], reader["oya"], reader["hai"]);
-                HandleReinit(reader["m0"], reader["m1"], reader["m2"], reader["m3"], reader["kawa0"], reader["kawa1"], reader["kawa2"], reader["kawa3"]);
-                if (OnInit != null)
-                {
-                    OnInit(reader.Name == "REINIT", gameData.direction, gameData.seq, gameData.seq2, gameData.players);
-                }
-            }
-            else if ((match = new Regex(@"T(\d+)").Match(reader.Name)).Success)
-            {
-                Tile tile = new Tile(int.Parse(match.Groups[1].Value));
-                player.hand.Add(tile);
-                gameData.lastTile = tile;
-                if (OnDraw != null)
-                {
-                    OnDraw(tile);
-                }
-            }
-            else if ((match = new Regex(@"([DEFGdefg])(\d+)").Match(reader.Name)).Success)
-            {
-                var tag = match.Groups[1].Value;
-                Player currentPlayer = gameData.players[tag.ToLower()[0] - 'd'];
-                if (tag == tag.ToUpper()) // 大写表示手切
-                {
-                    currentPlayer.safeTiles.Clear();
-                }
-                Tile tile = new Tile(int.Parse(match.Groups[2].Value));
-                currentPlayer.graveyard.Add(tile);
-                gameData.lastTile = tile;
-                gameData.remainingTile--;
-                foreach (var p in gameData.players)
-                {
-                    p.safeTiles.Add(tile);
-                }
-                if (OnDiscard != null)
-                {
-                    OnDiscard(currentPlayer, tile);
-                }
-                if (reader["t"] != null)
-                {
-                    if (OnWait != null)
+                    string logID = reader["log"];
+                    int oya = int.Parse(reader["oya"]);
+                    SaveTenhouLog(logID, oya == 0 ? 0 : 4 - oya);
+                    if (OnGameStart != null)
                     {
-                        OnWait(tile, currentPlayer);
+                        OnGameStart(false);
+                    }
+                }
+                else if (reader.Name == "SAIKAI")
+                {
+                    if (OnGameStart != null)
+                    {
+                        OnGameStart(true);
+                    }
+                }
+                else if (reader.Name == "INIT" || reader.Name == "REINIT")
+                {
+                    gameData = new GameData();
+                    HandleInit(reader["seed"], reader["ten"], reader["oya"], reader["hai"]);
+                    HandleReinit(reader["m0"], reader["m1"], reader["m2"], reader["m3"], reader["kawa0"], reader["kawa1"], reader["kawa2"], reader["kawa3"]);
+                    if (OnInit != null)
+                    {
+                        OnInit(reader.Name == "REINIT", gameData.direction, gameData.seq, gameData.seq2, gameData.players);
+                    }
+                }
+                else if ((match = new Regex(@"T(\d+)").Match(reader.Name)).Success)
+                {
+                    Tile tile = new Tile(int.Parse(match.Groups[1].Value));
+                    player.hand.Add(tile);
+                    gameData.lastTile = tile;
+                    if (OnDraw != null)
+                    {
+                        OnDraw(tile);
+                    }
+                }
+                else if ((match = new Regex(@"([DEFGdefg])(\d+)").Match(reader.Name)).Success)
+                {
+                    var tag = match.Groups[1].Value;
+                    Player currentPlayer = gameData.players[tag.ToLower()[0] - 'd'];
+                    if (tag == tag.ToUpper()) // 大写表示手切
+                    {
+                        currentPlayer.safeTiles.Clear();
+                    }
+                    Tile tile = new Tile(int.Parse(match.Groups[2].Value));
+                    currentPlayer.graveyard.Add(tile);
+                    gameData.lastTile = tile;
+                    gameData.remainingTile--;
+                    foreach (var p in gameData.players)
+                    {
+                        p.safeTiles.Add(tile);
+                    }
+                    if (OnDiscard != null)
+                    {
+                        OnDiscard(currentPlayer, tile);
+                    }
+                    if (reader["t"] != null)
+                    {
+                        if (OnWait != null)
+                        {
+                            OnWait(tile, currentPlayer);
+                        }
+                    }
+                }
+                else if (reader.Name == "DORA")
+                {
+                    Tile tile = new Tile(int.Parse(reader["hai"]));
+                    gameData.dora.Add(tile);
+                }
+                else if (reader.Name == "N")
+                {
+                    Player currentPlayer = gameData.players[int.Parse(reader["who"])];
+                    var fuuro = HandleFuuro(currentPlayer, int.Parse(reader["m"]));
+
+                    if (OnNaki != null)
+                    {
+                        OnNaki(currentPlayer, fuuro);
+                    }
+                }
+                else if (reader.Name == "REACH")
+                {
+                    Player currentPlayer = gameData.players[int.Parse(reader["who"])];
+                    currentPlayer.reached = true;
+                    currentPlayer.safeTiles.Clear();
+                    if (OnReach != null)
+                    {
+                        OnReach(currentPlayer);
                     }
                 }
             }
-            else if (reader.Name == "DORA")
+            catch (SocketException ex)
             {
-                Tile tile = new Tile(int.Parse(reader["hai"]));
-                gameData.dora.Add(tile);
-            }
-            else if (reader.Name == "N")
-            {
-                Player currentPlayer = gameData.players[int.Parse(reader["who"])];
-                var fuuro = HandleFuuro(currentPlayer, int.Parse(reader["m"]));
-
-                if (OnNaki != null)
-                {
-                    OnNaki(currentPlayer, fuuro);
-                }
-            }
-            else if (reader.Name == "REACH")
-            {
-                Player currentPlayer = gameData.players[int.Parse(reader["who"])];
-                currentPlayer.reached = true;
-                currentPlayer.safeTiles.Clear();
-                if (OnReach != null)
-                {
-                    OnReach(currentPlayer);
-                }
+                Close(true);
             }
         }
 
