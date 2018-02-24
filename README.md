@@ -3,9 +3,9 @@ A simplified client for *Tenhou.net*(one of the most popular online mahjong serv
 
 ## Result
 
-After 300+ matches:
+After 196 matches:
 
-![image](https://user-images.githubusercontent.com/4890396/29127564-774f5be2-7cef-11e7-8a5d-d0d5f897b9b8.png)
+![_20180224162757](https://user-images.githubusercontent.com/4890396/36635239-b7660618-197f-11e8-939e-4dabd88c89d8.png)
 
 ## How to run
 
