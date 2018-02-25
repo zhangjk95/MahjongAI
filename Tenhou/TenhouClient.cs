@@ -273,6 +273,11 @@ namespace Tenhou
                         pointDeltas[i] = scFields[i * 2 + 1] * 100;
                     }
 
+                    if (pointDeltas.Any(p => p >= 32000))
+                    {
+                        SetLogTag("Yakuman");
+                    }
+
                     if (OnAgari != null)
                     {
                         OnAgari(who, fromWho, point, pointDeltas, gameData.players);
@@ -585,6 +590,13 @@ namespace Tenhou
         {
             StreamWriter writer = new StreamWriter("TenhouLog.txt", true);
             writer.WriteLine("http://tenhou.net/0/?log={0}&tw={1}", logID, tw);
+            writer.Close();
+        }
+
+        private void SetLogTag(string tag)
+        {
+            StreamWriter writer = new StreamWriter("TenhouLog.txt", true);
+            writer.WriteLine("tag: {0}", tag);
             writer.Close();
         }
 
