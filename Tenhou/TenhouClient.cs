@@ -83,12 +83,9 @@ namespace Tenhou
         {
             client.Send(string.Format("<HELO name=\"{0}\" tid=\"f0\" sx=\"M\" />", username));
             string authStr = client.Receive();
-            var readerSettings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
-            var reader = XmlReader.Create(new StringReader(authStr), readerSettings);
-            reader.Read();
-            if (reader.Name == "HELO")
+            if (authStr.StartsWith("<HELO "))
             {
-                if (reader["nintei"] != null)
+                if (authStr.Contains("nintei"))
                 {
                     Close(true);
                 }
