@@ -21,7 +21,7 @@ namespace Tenhou
         public override void OnDraw(Tile tile)
         {
             int distance = calcDistance();
-            if (distance == -1 && (player.fuuro.VisibleCount == 0 || calcPoint(tile, false, true) > 0))
+            if (distance == -1 && (player.fuuro.VisibleCount == 0 || calcPoint(tile, riichi: false, tsumoAgari: false, isLastTile: gameData.remainingTile == 0) > 0))
             {
                 client.Tsumo();
             }
@@ -47,7 +47,7 @@ namespace Tenhou
             EvalResult currentEvalResult = eval13();
             fromPlayer.graveyard.Remove(tile);
             player.hand.Add(tile);
-            EvalResult currentEvalResult14 = eval14(tile, 1);
+            EvalResult currentEvalResult14 = eval14(tile, 1, isLastTile: gameData.remainingTile == 0);
             player.hand.Remove(tile);
             if (currentEvalResult14.Distance == -1 && !currentEvalResult.Furiten && currentEvalResult14.E_Point > 0)
             {
@@ -107,7 +107,9 @@ namespace Tenhou
                     {
                         tmpResult = eval13();
                     }
-                    if (tmpResult != null && !shouldDef(tmpResult, discardTile) && shouldNaki(currentEvalResult, tmpResult) && new EvalResultComp(!isAllLastTop()).Compare(tmpResult, bestResult.Item3) > 0) // All last top 不比较得点
+                    if (tmpResult != null && !shouldDef(tmpResult, discardTile) && 
+                        (shouldNaki(currentEvalResult, tmpResult) && new EvalResultComp(!isAllLastTop()).Compare(tmpResult, bestResult.Item3) > 0 // All last top 不比较得点
+                        || gameData.remainingTile < 16 && currentEvalResult.Distance == 1 && tmpResult.Distance == 0)) // 特判最后四巡鸣型听 
                     {
                         bestResult = Tuple.Create(candidate, discardTile, tmpResult);
                     }
@@ -180,32 +182,29 @@ namespace Tenhou
 
         private bool shouldReach(Tile discardTile, EvalResult evalResult)
         {
-            player.hand.Remove(discardTile);
-            player.graveyard.Add(discardTile);
-            EvalResult evalResultWithoutReach = eval13(1, false);
-            player.graveyard.Remove(discardTile);
-            player.hand.Add(discardTile);
-
             bool changeRanking = false;
             int rankingWithReach = 0;
             int rankingWithoutReach = 0;
+
+            player.hand.Remove(discardTile);
+            player.graveyard.Add(discardTile);
+            EvalResult evalResultWithoutReach = eval13(1, false);
             if (isAllLast())
             {
-                player.hand.Remove(discardTile);
-                player.graveyard.Add(discardTile);
                 rankingWithReach = expectedRankingWhenAgari(riichi: true);
                 rankingWithoutReach = expectedRankingWhenAgari(riichi: false);
                 changeRanking = rankingWithReach < rankingWithoutReach;
-                player.graveyard.Remove(discardTile);
-                player.hand.Add(discardTile);
                 Trace.WriteLine(string.Format("Expected Ranking: w/ reach {0}, w/o reach {1}", rankingWithReach, rankingWithoutReach));
             }
+            player.graveyard.Remove(discardTile);
+            player.hand.Add(discardTile);
 
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
                 && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
                 && evalResult.E_PromotionCount[0] > 0 // 没有空听
                 && !shouldDef(evalResult) // 没有在防守状态
-                && !(isAllLast() && !changeRanking && !(player.direction == Direction.E && rankingWithoutReach > 1) && evalResultWithoutReach.E_Point > 0); // 如果All last且立直不改变顺位，除非是尾亲且和了也不是top，否则不立直
+                && !(isAllLast() && !changeRanking && !(player.direction == Direction.E && rankingWithoutReach > 1) && evalResultWithoutReach.E_Point > 0) // 如果All last且立直不改变顺位，除非是尾亲且和了也不是top，否则不立直
+                && evalResult.E_PromotionCount[0] > 1; // 枚数只剩1张就不立直
         }
 
         private int expectedRankingWhenAgari(bool riichi)
@@ -461,7 +460,7 @@ namespace Tenhou
             return res;
         }
 
-        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true, bool tsumo = false)
+        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true, bool tsumo = false, bool isLastTile = false)
         {
             var res = new EvalResult();
             int normalDistance;
@@ -471,7 +470,7 @@ namespace Tenhou
             {
                 if (res.Distance == -1)
                 {
-                    res.E_Point = calcPoint(lastTile, riichi, tsumo);
+                    res.E_Point = calcPoint(lastTile, riichi, tsumo, isLastTile);
                 }
                 res.E_PromotionCount = new List<double>();
             }
@@ -506,8 +505,8 @@ namespace Tenhou
                 {
                     return res;
                 }
-                else if (x.Distance == y.Distance && x.Distance >= 2 && x.NormalDistance > x.Distance && y.NormalDistance > x.Distance
-                    && (res = y.NormalDistance.CompareTo(x.NormalDistance)) != 0) // 如果两个都不是一般型选有希望做一般型的那个
+                else if (x.Distance == y.Distance && x.Distance >= 2
+                    && (res = y.NormalDistance.CompareTo(x.NormalDistance)) != 0) // 如果两个都不是一般型选有希望做一般型的那个。如果有一个是一般型，选一般型的那个。（后一句只对鸣牌判断有效，对摸牌判断在由于进张数不同，本来就可以正常处理）
                 {
                     return res;
                 }

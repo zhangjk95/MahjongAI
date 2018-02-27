@@ -216,9 +216,31 @@ namespace Tenhou
             ai.OnDraw(drawed);
         }
 
-        static void Main2()
+        // 鸣牌不改变向听数，但使牌变成了一般型
+        // Expected: pon, not pass
+        static void test10()
         {
-            test9();
+            Config config = new Config();
+            config.GameType |= GameType.Match_EastSouth;
+            var client = new TenhouClient(config);
+            client.gameData = new GameData();
+            client.gameData.direction = Direction.E;
+            client.gameData.remainingTile = 60;
+            client.gameData.dora = new Dora() { };
+            client.player.hand = new Hand() {
+                new Tile("3m"), new Tile("6m"), new Tile("7m"), new Tile("1p"),
+                new Tile("4p"), new Tile("4p"), new Tile("8p"), new Tile("1s"),
+                new Tile("7s"), new Tile("5z"), new Tile("6z"), new Tile("7z"),
+                new Tile("7z")
+            };
+            client.player.fuuro = new Fuuro() { };
+            var ai = new AIController(client);
+            ai.OnWait(new Tile("7z"), client.gameData.players[2]);
+        }
+
+        static void Main()
+        {
+            test10();
         }
     }
 }

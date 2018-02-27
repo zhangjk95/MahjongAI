@@ -107,7 +107,11 @@ namespace Tenhou
             res.Risk = defTargets.Sum(p => evalDef(tile, p).Risk * defLevel(p)) / defTargets.Sum(p => defLevel(p));
             var others = gameData.players.Where(p => p != player && defLevel(p) == 0);
             res.RiskForOthers = others.Count() > 0 ? others.Average(p => evalDef(tile, p).Risk) : 0;
-            res.Bonus = atkEvalResult == null ? 0 : isAllLastTop() ? 5 : atkEvalResult.E_Point / 800;
+            res.Bonus = atkEvalResult == null ? 0 : 
+                isAllLastTop() ? 5 : 
+                atkEvalResult.E_Point > 0 ? atkEvalResult.E_Point / 800 : 
+                gameData.remainingTile < 16 && atkEvalResult.Distance == 0 ? 1 : // 晚巡型听
+                0;
             res.AtkEvalResult = atkEvalResult;
             return res;
         }

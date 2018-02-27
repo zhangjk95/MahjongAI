@@ -102,6 +102,10 @@ void handleMjscore() {
 	cin >> tsumoAgari;
 	mjscore.Set_Tumoagari(tsumoAgari);
 
+	int isLastTile;
+	cin >> isLastTile;
+	mjscore.Is_Haitei(isLastTile);
+
 	mjscore.Run();
 	cout << 
 		(mjscore.Get_ErrorCode() != 0 ? 0 :

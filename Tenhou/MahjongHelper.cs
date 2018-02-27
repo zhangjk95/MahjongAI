@@ -95,7 +95,7 @@ namespace Tenhou
             }
         }
 
-        public int calcPoint(Hand hand, Tile lastTile, Direction gameDirection, Direction playerDirection, Fuuro fuuro, Dora dora, bool isRiichi, bool tsumoAgari)
+        public int calcPoint(Hand hand, Tile lastTile, Direction gameDirection, Direction playerDirection, Fuuro fuuro, Dora dora, bool isRiichi, bool tsumoAgari, bool isLastTile)
         {
             lock (process)
             {
@@ -127,6 +127,7 @@ namespace Tenhou
 
                 send(isRiichi ? 1 : 0);
                 send(tsumoAgari ? 1 : 0);
+                send(isLastTile ? 1 : 0);
 
                 var res = int.Parse(process.StandardOutput.ReadLine());
                 return res;
