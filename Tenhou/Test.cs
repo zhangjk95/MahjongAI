@@ -238,7 +238,7 @@ namespace Tenhou
             ai.OnWait(new Tile("7z"), client.gameData.players[2]);
         }
 
-        static void Main()
+        static void Main2()
         {
             test10();
         }
