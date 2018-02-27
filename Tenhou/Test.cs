@@ -41,7 +41,7 @@ namespace Tenhou
                 new Tile(48), new Tile(52), new Tile(56),
                 new Tile(96), new Tile(100), new Tile(104),
                 new Tile(124), new Tile(125)
-            }, new Tile(40), Direction.E, Direction.S, new Fuuro(), new Dora { new Tile(68) }, false, false);
+            }, new Tile(40), Direction.E, Direction.S, new Fuuro(), new Dora { new Tile(68) }, false, false, false);
             Console.WriteLine(point);
             Console.ReadKey();
         }
