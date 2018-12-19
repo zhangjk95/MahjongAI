@@ -1,6 +1,6 @@
 FROM mono:5.16.0
 COPY . /usr/src/app
-RUN cd /usr/src/app && msbuild MahjongAI.sln /t:Build /p:Configuration=Release
+RUN cd /usr/src/app && nuget restore MahjongAI.sln && msbuild MahjongAI.sln /t:Build /p:Configuration=Release
 RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - \
     && apt-get install -y nodejs
 RUN cd /usr/src/app/MajsoulHelper && npm install

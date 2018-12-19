@@ -66,7 +66,6 @@ You can run this program in Docker on either Windows or Linux without ANY requir
 
 4. Build Docker image.
 
-		chmod +x build.sh
 		./build.sh
 
 5. Run.
