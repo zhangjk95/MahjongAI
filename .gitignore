@@ -1,7 +1,10 @@
 .vs
 **/Debug
 **/Release
+**/node_modules
 *.sdf
 *.opendb
-Tenhou/App.config
-flash.as
+packages
+reverse
+MahjongAI/App.config
+MahjongAI/Test.cs

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
+    </startup>
+    <appSettings>
+      
+      <!-- Available options: "Tenhou", "Majsoul" -->
+      <add key="Platform" value="Tenhou" />
+
+      <!-- Your ID on tenhou.net, or "NoName" which represents anonymous user, required if Platform == "Tenhou" -->
+      <add key="TenhouID" value="NoName" />
+
+      <!-- Your username on majsoul.union-game.com, required if Platform == "Majsoul" -->
+      <add key="MajsoulUsername" value="yourUsername" />
+
+      <!-- Your password on majsoul.union-game.com, required if Platform == "Majsoul" -->
+      <add key="MajsoulPassword" value="yourPassword" />
+
+      <!-- Private room number, or "0" which represents public lobby -->
+      <add key="PrivateRoom" value="0" />
+
+      <!-- Available options: "Normal", "High", "VeryHigh" or "Phoenix" -->
+      <add key="GameType_Level" value="Normal" />
+
+      <!-- Available options: "Normal" (with red tiles) or "Fast" (with red tiles), avaliable if Platform == "Tenhou" -->
+      <add key="GameType_Mode" value="Normal" />
+
+      <!-- Available options: "East" or "EastSouth" -->
+      <add key="GameType_Match" value="EastSouth" />
+
+      <!-- The number of matches it will play, or "INF" to make it play forever -->
+      <!-- PS: You can input "q" and ENTER at any time while the program is running, then it will stop after the current match is over. -->
+      <add key="Repeat" value="INF" />
+
+      <!-- Available options: "Default", "DefendReachedPlayers", "DefendReachedOya", "NoDefence" -->
+      <add key="Strategy_DefenceLevel" value="Default" />
+      
+    </appSettings>
+</configuration>
