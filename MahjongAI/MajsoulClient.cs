@@ -36,6 +36,7 @@ namespace MahjongAI
         private Queue<MajsoulMessage> pendingActions = new Queue<MajsoulMessage>();
         private bool inPrivateRoom = false;
         private bool continuedBetweenGames = false;
+        private bool gameStarted = false;
 
         public MajsoulClient(Config config) : base(config)
         {
@@ -224,13 +225,23 @@ namespace MahjongAI
 
         private void StartGame(JToken data, bool continued)
         {
-            wsGame = new WebSocket("wss://" + (string)data["game_url"], onMessage: OnMessage, onError: OnError);
-            wsGame.Connect().Wait();
-            Send(wsGame, ".lq.FastTest.authGame", new
+            gameStarted = false;
+
+            Task.Factory.StartNew(() =>
             {
-                token = data["connect_token"],
-                game_uuid = data["game_uuid"]
-            }).Wait();
+                while (!gameStarted)
+                {
+                    wsGame = new WebSocket("wss://" + (string)data["game_url"], onMessage: OnMessage, onError: OnError);
+                    wsGame.Connect().Wait();
+                    Send(wsGame, ".lq.FastTest.authGame", new
+                    {
+                        token = data["connect_token"],
+                        game_uuid = data["game_uuid"]
+                    }).Wait();
+                    Thread.Sleep(1000);
+                }
+            });
+
             SaveReplay((string)data["game_uuid"]);
             InvokeOnGameStart(continued);
         }
@@ -272,6 +283,8 @@ namespace MahjongAI
             }
             else if (message.MethodName == ".lq.FastTest.authGame")
             {
+                gameStarted = true;
+                
                 if (!continued)
                 {
                     Send(wsGame, ".lq.FastTest.enterGame", new { }).Wait();
