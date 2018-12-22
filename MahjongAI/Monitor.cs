@@ -16,9 +16,16 @@ namespace MahjongAI
 
         }
 
-        protected override void OnLogin(bool resume)
+        protected override void OnLogin(bool resume, bool succeeded)
         {
-            Trace.WriteLine("Login");
+            if (succeeded)
+            {
+                Trace.WriteLine("Login succeeded.");
+            }
+            else
+            {
+                Trace.WriteLine("Login failed.");
+            }
         }
 
         protected override void OnClose()

@@ -13,7 +13,7 @@ namespace MahjongAI
         public event Action<Tile> OnDraw;
         public event Action<Tile, Player> OnWait;
         public event Action<Player, Tile> OnDiscard;
-        public event Action<bool> OnLogin;
+        public event Action<bool, bool> OnLogin;
         public event Action OnClose;
         public event Action OnConnectionException;
         public event Action<bool> OnGameStart;
@@ -97,9 +97,9 @@ namespace MahjongAI
             OnDiscard?.Invoke(player, tile);
         }
 
-        protected void InvokeOnLogin(bool resume)
+        protected void InvokeOnLogin(bool resume, bool succeeded)
         {
-            OnLogin?.Invoke(resume);
+            OnLogin?.Invoke(resume, succeeded);
         }
 
         protected void InvokeOnClose()

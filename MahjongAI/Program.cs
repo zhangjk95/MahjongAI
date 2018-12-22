@@ -32,9 +32,9 @@ namespace MahjongAI
 
             gameEnd.Reset();
 
-            client.OnLogin += (resume) =>
+            client.OnLogin += (resume, succeeded) =>
             {
-                if (!resume)
+                if (!resume && succeeded)
                 {
                     client.EnterPrivateRoom(config.PrivateRoom);
                     client.Join(config.GameType);

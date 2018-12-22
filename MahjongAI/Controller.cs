@@ -63,7 +63,7 @@ namespace MahjongAI
             isRunning = false;
         }
 
-        protected virtual void OnLogin(bool resume)
+        protected virtual void OnLogin(bool resume, bool succeeded)
         {
 
         }

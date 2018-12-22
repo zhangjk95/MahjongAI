@@ -266,15 +266,19 @@ namespace MahjongAI
             if (message.MethodName == ".lq.Lobby.login" || message.MethodName == ".lq.Lobby.oauth2Login")
             {
                 accountId = (int)message.Json["account_id"];
-                
-                if (message.Json["game_info"] != null)
+
+                if (message.Json["error"] != null && message.Json["error"]["code"] != null)
+                {
+                    InvokeOnLogin(resume: false, succeeded: false);
+                }
+                else if (message.Json["game_info"] != null)
                 {
                     continued = true;
-                    InvokeOnLogin(continued);
+                    InvokeOnLogin(resume: true, succeeded: true);
                     StartGame(message.Json["game_info"], true);
                 } else
                 {
-                    InvokeOnLogin(false);
+                    InvokeOnLogin(resume: false, succeeded: true);
                 }
             }
             if (message.MethodName == ".lq.NotifyRoomGameStart")

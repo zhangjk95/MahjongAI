@@ -60,8 +60,12 @@ namespace MahjongAI
                 {
                     string authRes = getAuthRes(authStr);
                     client.Send(authRes);
-                    InvokeOnLogin(false);
+                    InvokeOnLogin(resume: false, succeeded: true);
                 }
+            }
+            else if (authStr.StartsWith("<ERR "))
+            {
+                InvokeOnLogin(resume: false, succeeded: false);
             }
             else
             {
