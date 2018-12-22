@@ -17,7 +17,13 @@ After 196 matches:
 
 ### Majsoul
 
-Comming soon.
+<div style="width: 300px">
+
+![image](https://user-images.githubusercontent.com/4890396/50378552-bb55ec00-05e9-11e9-9903-23faf2b3fae5.png)
+
+</div>
+
+(To be updated...)
 
 ## How to run
 
