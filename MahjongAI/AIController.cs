@@ -314,7 +314,7 @@ namespace MahjongAI
                     player.graveyard.Add(tile);
                     int tmpNormalDistance;
                     var tmpDistance = calcDistance(out tmpNormalDistance);
-                    if (tmpDistance <= currentDistance || depth == -1 && currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变
+                    if (tmpDistance <= currentDistance || depth == -1 && currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance || tmpDistance == 0 && currentDistance == -1) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变，或者当前是无番和且打掉之后能保持听牌
                     {
                         var result = evalResults[tile.Name] = eval13(depth);
                         result.DiscardedDoraCount = doraValue(tile);

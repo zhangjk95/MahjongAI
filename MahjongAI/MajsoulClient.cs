@@ -601,18 +601,20 @@ namespace MahjongAI
 
         private FuuroGroup HandleAnkan(Player currentPlayer, string tileName)
         {
+            tileName = tileName.Replace('0', '5');
+
             FuuroGroup fuuroGroup = new FuuroGroup();
             fuuroGroup.type = FuuroType.ankan;
 
             if (currentPlayer == player)
             {
-                IEnumerable<Tile> tiles = player.hand.Where(t => t.GeneralName == tileName.Replace('0', '5')).ToList();
+                IEnumerable<Tile> tiles = player.hand.Where(t => t.GeneralName == tileName).ToList();
                 fuuroGroup.AddRange(tiles);
                 player.hand.RemoveRange(tiles);
             }
             else
             {
-                if ((tileName[0] == '5' || tileName[0] == '0') && tileName[1] != 'z') // 暗杠中有红牌
+                if (tileName[0] == '5' && tileName[1] != 'z') // 暗杠中有红牌
                 {
                     fuuroGroup.Add(new Tile(tileName));
                     fuuroGroup.Add(new Tile(tileName));
