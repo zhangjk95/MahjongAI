@@ -19,7 +19,15 @@ namespace MahjongAI
 
         public MajsoulHelper()
         {
-            var workingDirectory = Path.GetFullPath(workingDirectories.First(path => Directory.Exists(path)));
+            string workingDirectory;
+            try
+            {
+                workingDirectory = Path.GetFullPath(workingDirectories.First(path => Directory.Exists(path)));
+            }
+            catch (Exception)
+            {
+                throw new FileNotFoundException("Couldn't find MajsoulHelper. Attempted paths:\n" + string.Join("\n", workingDirectories.Select(path => Path.GetFullPath(path))));
+            }
 
             process = new Process()
             {

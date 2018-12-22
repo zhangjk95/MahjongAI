@@ -40,12 +40,12 @@ namespace MahjongAI
                     client.Join(config.GameType);
                 }
             };
-            client.OnGameEnd += () => 
+            client.OnGameEnd += () =>
             {
                 config.Repeat--;
                 gameEnd.Set();
             };
-            client.OnConnectionException += () => 
+            client.OnConnectionException += () =>
             {
                 if (config.Platform == Platform.Tenhou && config.TenhouID.Length <= 8) // 如果没有天凤账号，无法断线重连
                 {
@@ -122,6 +122,24 @@ namespace MahjongAI
             return config;
         }
 
+        static void SelfCheck(Config config)
+        {
+            try
+            {
+                MahjongHelper.getInstance();
+                if (config.Platform == Platform.Majsoul)
+                {
+                    new MajsoulHelper();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Console.ReadKey();
+                Environment.Exit(2);
+            }
+        }
+
         static void Main(string[] args)
         {
             var listener = new ConsoleTraceListener();
@@ -131,6 +149,8 @@ namespace MahjongAI
             writer.AutoFlush = true;
             Trace.Listeners.Add(new TextWriterTraceListener(writer));
             Config config = GetConfig();
+
+            SelfCheck(config);
 
             var handleInputThread = new Thread(() => HandleInput(config));
             handleInputThread.Start();

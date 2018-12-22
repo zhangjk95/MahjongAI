@@ -23,8 +23,25 @@ namespace MahjongAI
 
         public MahjongHelper()
         {
-            var programPath = Path.GetFullPath(programPaths.First(path => File.Exists(path)));
-            var workingDirectory = Path.GetFullPath(workingDirectories.First(dir => resourceFiles.All(file => File.Exists(Path.Combine(dir, file)))));
+            string programPath;
+            try
+            {
+                programPath = Path.GetFullPath(programPaths.First(path => File.Exists(path)));
+            }
+            catch (Exception)
+            {
+                throw new FileNotFoundException("Couldn't find MahjongLib. Attempted paths:\n" + string.Join("\n", programPaths.Select(path => Path.GetFullPath(path))));
+            }
+
+            string workingDirectory;
+            try
+            {
+                workingDirectory = Path.GetFullPath(workingDirectories.First(dir => resourceFiles.All(file => File.Exists(Path.Combine(dir, file)))));
+            }
+            catch (Exception)
+            {
+                throw new FileNotFoundException("Couldn't find syanten.dat. Attempted paths:\n" + string.Join("\n", workingDirectories.Select(path => Path.GetFullPath(Path.Combine(path, resourceFiles[0])))));
+            }
 
             process = new Process()
             {
