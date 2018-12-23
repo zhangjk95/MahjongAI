@@ -203,7 +203,7 @@ namespace MahjongAI
             player.hand.Add(discardTile);
 
             return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
-                && (evalResultWithoutReach.E_Point < 6000 || gameData.players.Count(p => p.reached) >= 2) // 期望得点<6000 或 立直人数 >=2
+                && (evalResultWithoutReach.E_Point < 3500 + evalResult.E_PromotionCount[0] * 500 || gameData.players.Count(p => p.reached) >= 2) // 期望得点越小或听牌枚数越多，越应该立直 或 立直人数 >=2
                 && evalResult.E_PromotionCount[0] > 0 // 没有空听
                 && !shouldDef(evalResult) // 没有在防守状态
                 && !(isAllLast() && !changeRanking && !(player.direction == Direction.E && rankingWithoutReach > 1) && evalResultWithoutReach.E_Point > 0) // 如果All last且立直不改变顺位，除非是尾亲且和了也不是top，否则不立直
