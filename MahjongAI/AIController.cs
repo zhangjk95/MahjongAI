@@ -149,21 +149,21 @@ namespace MahjongAI
         {
             if (currentPlayer == player && (fuuro.type == FuuroType.pon || fuuro.type == FuuroType.chii))
             {
-                decideMove();
+                decideMove(rightAfterNaki: true);
             }
         }
 
-        private void decideMove() {
+        private void decideMove(bool rightAfterNaki = false) {
             EvalResult evalResult;
             List<Tuple<Tile, EvalResult>> options;
             Tile discardTile = chooseDiscardForAtk(out options, out evalResult);
             if (!shouldDef(evalResult, discardTile))
             {
-                if (shouldAnKan(discardTile))
+                if (!rightAfterNaki && shouldAnKan(discardTile))
                 {
                     client.Ankan(discardTile);
                 }
-                else if (shouldKaKan(discardTile))
+                else if (!rightAfterNaki && shouldKaKan(discardTile))
                 {
                     client.Kakan(discardTile);
                 }
