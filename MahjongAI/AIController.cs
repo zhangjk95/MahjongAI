@@ -518,12 +518,12 @@ namespace MahjongAI
                 {
                     return res;
                 }
-                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance <= y.NormalDistance && x.E_PromotionCount.Count > 1 && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 2
+                else if (y.Distance >= 2 && x.Distance == y.Distance + 1 && x.NormalDistance <= y.NormalDistance && x.E_PromotionCount.Count > 1 && x.E_PromotionCount[1] >= y.E_PromotionCount[0] * 1.5
                     && (res = comparePromotionCount0(x.E_NormalPromitionCount, x.DiscardedDoraCount, y.E_NormalPromitionCount, y.DiscardedDoraCount)) != 0) // 如果x是一般型但y不是，且x形状比y好很多，比较一般型的进张数
                 {
                     return res;
                 }
-                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance <= x.NormalDistance && y.E_PromotionCount.Count > 1 && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 2
+                else if (x.Distance >= 2 && y.Distance == x.Distance + 1 && y.NormalDistance <= x.NormalDistance && y.E_PromotionCount.Count > 1 && y.E_PromotionCount[1] >= x.E_PromotionCount[0] * 1.5
                     && (res = comparePromotionCount0(x.E_NormalPromitionCount, x.DiscardedDoraCount, y.E_NormalPromitionCount, y.DiscardedDoraCount)) != 0) // 如果y是一般型但x不是，且y形状比x好很多，比较一般型的进张数
                 {
                     return res;
