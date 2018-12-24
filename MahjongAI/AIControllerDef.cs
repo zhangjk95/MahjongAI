@@ -169,15 +169,15 @@ namespace MahjongAI
             {
                 res.Risk += 5;
             }
-            else if (res.Risk > 0 && gameData.dora.Exists(t => t.Type == tile.Type && t.Type != "z" && t.getNextGeneralId() + 1 == tile.GenaralId && t.getNextGeneralId() - 1 == tile.GenaralId))
+            else if (res.Risk > 0 && gameData.dora.Exists(t => t.Type == tile.Type && t.Type != "z" && t.getNextGeneralId() + 1 == tile.GeneralId && t.getNextGeneralId() - 1 == tile.GeneralId))
             {
                 res.Risk += 3;
             }
-            else if (res.Risk > 0 && gameData.dora.Exists(t => t.Type == tile.Type && t.Type != "z" && t.getNextGeneralId() + 2 == tile.GenaralId && t.getNextGeneralId() - 2 == tile.GenaralId))
+            else if (res.Risk > 0 && gameData.dora.Exists(t => t.Type == tile.Type && t.Type != "z" && t.getNextGeneralId() + 2 == tile.GeneralId && t.getNextGeneralId() - 2 == tile.GeneralId))
             {
                 res.Risk += 2;
             }
-            else if (res.Risk > 0 && gameData.dora.Exists(t => t.Type == tile.Type && t.Type != "z" && t.getNextGeneralId() + 3 == tile.GenaralId && t.getNextGeneralId() - 3 == tile.GenaralId))
+            else if (res.Risk > 0 && gameData.dora.Exists(t => t.Type == tile.Type && t.Type != "z" && t.getNextGeneralId() + 3 == tile.GeneralId && t.getNextGeneralId() - 3 == tile.GeneralId))
             {
                 res.Risk += 1;
             }

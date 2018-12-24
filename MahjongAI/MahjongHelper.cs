@@ -99,7 +99,7 @@ namespace MahjongAI
                 int[] handTmp = new int[38];
                 foreach (var tile in hand)
                 {
-                    handTmp[tile.GenaralId]++;
+                    handTmp[tile.GeneralId]++;
                 }
                 send(string.Join(" ", handTmp));
 
@@ -132,13 +132,13 @@ namespace MahjongAI
                 send(fuuro.Count);
                 foreach (var group in fuuro)
                 {
-                    send(getFuuroType(group), group.Min(t => t.GenaralId));
+                    send(getFuuroType(group), group.Min(t => t.GeneralId));
                 }
 
                 int[] doraTmp = new int[10];
                 for (int i = 0; i < dora.Count; i++)
                 {
-                    doraTmp[i] = dora[i].GenaralId;
+                    doraTmp[i] = dora[i].GeneralId;
                 }
                 send(string.Join(" ", doraTmp));
 
@@ -179,7 +179,7 @@ namespace MahjongAI
             }
             else
             {
-                return tile.GenaralId;
+                return tile.GeneralId;
             }
         }
 

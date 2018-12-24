@@ -38,7 +38,7 @@ namespace MahjongAI.Models
             }
         }
 
-        public int GenaralId
+        public int GeneralId
         {
             get
             {
@@ -114,7 +114,7 @@ namespace MahjongAI.Models
 
         public int getNextGeneralId()
         {
-            var id = GenaralId;
+            var id = GeneralId;
             if (id == 9 || id == 19 || id == 29)
             {
                 return id - 8;

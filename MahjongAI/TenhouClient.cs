@@ -504,7 +504,7 @@ namespace MahjongAI
             // 如果加杠则移除原来的碰
             if (tiles.type == FuuroType.kakan)
             {
-                currentPlayer.fuuro.RemoveAll(g => g.type == FuuroType.pon && g.All(t => t.GenaralId == tiles[0].GenaralId));
+                currentPlayer.fuuro.RemoveAll(g => g.type == FuuroType.pon && g.All(t => t.GeneralId == tiles[0].GeneralId));
             }
 
             if (currentPlayer == player)

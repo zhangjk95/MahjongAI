@@ -29,7 +29,7 @@ namespace MahjongAI
 
         private int doraValue(Tile tile)
         {
-            int res = gameData.dora.Count(d => d.getNextGeneralId() == tile.GenaralId);
+            int res = gameData.dora.Count(d => d.getNextGeneralId() == tile.GeneralId);
             if (tile.isRedDora)
             {
                 res++;
@@ -44,7 +44,7 @@ namespace MahjongAI
 
         private int getWeight(Tile tile, Player forPlayer)
         {
-            var res = origWeightMap[tile.GenaralId];
+            var res = origWeightMap[tile.GeneralId];
             if (tile.Type == "z" && tile.Number == (int)gameData.direction)
             {
                 res += 2;
@@ -80,9 +80,9 @@ namespace MahjongAI
             }
         }
 
-        private IEnumerable<Tile> getDiscardedTiles()
+        private IEnumerable<Tile> getEnemyDiscardedTiles()
         {
-            foreach (var p in gameData.players)
+            foreach (var p in gameData.players.Where(p => p != player))
             {
                 foreach (var tile in p.graveyard.Get(true))
                 {
@@ -110,8 +110,8 @@ namespace MahjongAI
             foreach (var reqItem in req)
             {
                 var tmp = new List<Tile>();
-                tmp.AddRange(player.hand.Where(t => t.GenaralId == reqItem.Item1 && !tiles.Any(t2 => t == t2) && t.isRedDora));
-                tmp.AddRange(player.hand.Where(t => t.GenaralId == reqItem.Item1 && !tiles.Any(t2 => t == t2) && !t.isRedDora));
+                tmp.AddRange(player.hand.Where(t => t.GeneralId == reqItem.Item1 && !tiles.Any(t2 => t == t2) && t.isRedDora));
+                tmp.AddRange(player.hand.Where(t => t.GeneralId == reqItem.Item1 && !tiles.Any(t2 => t == t2) && !t.isRedDora));
                 if (tmp.Count >= reqItem.Item2)
                 {
                     res.AddRange(tmp.Take(reqItem.Item2));
@@ -139,7 +139,7 @@ namespace MahjongAI
 
             foreach (var tile in player.hand)
             {
-                if (tile.Type == "z" && getWeight(tile) > 0 && player.hand.Count(t => t.GenaralId == tile.GenaralId) >= 3)
+                if (tile.Type == "z" && getWeight(tile) > 0 && player.hand.Count(t => t.GeneralId == tile.GeneralId) >= 3)
                 {
                     return true;
                 }

@@ -32,7 +32,7 @@ namespace MahjongAI
 
         public static int TilesCount(this IEnumerable<Tile> tileList, Tile baseTile, int deltaNum = 0)
         {
-            return tileList.Count(t => t.Type == baseTile.Type && (t.Type != "z" || deltaNum == 0) && t.GenaralId == baseTile.GenaralId + deltaNum);
+            return tileList.Count(t => t.Type == baseTile.Type && (t.Type != "z" || deltaNum == 0) && t.GeneralId == baseTile.GeneralId + deltaNum);
         }
 
         public static bool TileExists(this IEnumerable<Tile> tileList, Tile baseTile, int deltaNum = 0)

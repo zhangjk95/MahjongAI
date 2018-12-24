@@ -68,19 +68,19 @@ namespace MahjongAI
 
                 List<FuuroGroup> candidates = new List<FuuroGroup>()
                 {
-                    tryGetFuuroGroup(FuuroType.pon, new[] { Tuple.Create(tile.GenaralId, 2) }, tile)
+                    tryGetFuuroGroup(FuuroType.pon, new[] { Tuple.Create(tile.GeneralId, 2) }, tile)
                 };
                 if (gameData.remainingTile > 0)
                 {
-                    candidates.Add(tryGetFuuroGroup(FuuroType.minkan, new[] { Tuple.Create(tile.GenaralId, 3) }, tile));
+                    candidates.Add(tryGetFuuroGroup(FuuroType.minkan, new[] { Tuple.Create(tile.GeneralId, 3) }, tile));
                 }
                 if (fromPlayer.id == 3 && tile.Type != "z")
                 {
                     candidates.AddRange(new List<FuuroGroup>()
                     {
-                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId + 1, 1), Tuple.Create(tile.GenaralId + 2, 1) }, tile),
-                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId - 1, 1), Tuple.Create(tile.GenaralId + 1, 1) }, tile),
-                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GenaralId - 2, 1), Tuple.Create(tile.GenaralId - 1, 1) }, tile)
+                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GeneralId + 1, 1), Tuple.Create(tile.GeneralId + 2, 1) }, tile),
+                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GeneralId - 1, 1), Tuple.Create(tile.GeneralId + 1, 1) }, tile),
+                        tryGetFuuroGroup(FuuroType.chii, new[] { Tuple.Create(tile.GeneralId - 2, 1), Tuple.Create(tile.GeneralId - 1, 1) }, tile)
                     });
                 }
                 Tuple<FuuroGroup, Tile, EvalResult> bestResult = Tuple.Create<FuuroGroup, Tile, EvalResult>(null, null, currentEvalResult);
@@ -103,9 +103,9 @@ namespace MahjongAI
 
                         // 不能食替
                         if (discardTile != null 
-                            && (discardTile.GenaralId == tile.GenaralId 
-                                || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId - 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId - 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId - 1)
-                                || discardTile.Type == tile.Type && discardTile.GenaralId == tile.GenaralId + 3 && candidate.Exists(t => t.GenaralId == tile.GenaralId + 2) && candidate.Exists(t => t.GenaralId == tile.GenaralId + 1)))
+                            && (discardTile.GeneralId == tile.GeneralId 
+                                || discardTile.Type == tile.Type && discardTile.GeneralId == tile.GeneralId - 3 && candidate.Exists(t => t.GeneralId == tile.GeneralId - 2) && candidate.Exists(t => t.GeneralId == tile.GeneralId - 1)
+                                || discardTile.Type == tile.Type && discardTile.GeneralId == tile.GeneralId + 3 && candidate.Exists(t => t.GeneralId == tile.GeneralId + 2) && candidate.Exists(t => t.GeneralId == tile.GeneralId + 1)))
                         {
                             tmpResult = null;
                         }
@@ -244,7 +244,7 @@ namespace MahjongAI
 
         private bool shouldAnKan(Tile tile)
         {
-            FuuroGroup group = tryGetFuuroGroup(FuuroType.ankan, new[] { Tuple.Create(tile.GenaralId, 4) });
+            FuuroGroup group = tryGetFuuroGroup(FuuroType.ankan, new[] { Tuple.Create(tile.GeneralId, 4) });
             if (group == null || gameData.remainingTile <= 0)
             {
                 return false;
@@ -269,7 +269,7 @@ namespace MahjongAI
 
         private bool shouldKaKan(Tile tile)
         {
-            return gameData.remainingTile > 0 && player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GenaralId == tile.GenaralId));
+            return gameData.remainingTile > 0 && player.fuuro.Any(group => group.type == FuuroType.pon && group.All(t => t.GeneralId == tile.GeneralId));
         }
 
         private bool shouldNaki(EvalResult resultBefore, EvalResult resultAfter)
@@ -456,7 +456,7 @@ namespace MahjongAI
                 }
             }
 
-            res.Furiten = promotionTiles.Exists(tuple => player.graveyard.Exists(t => t.GenaralId == tuple.Item1.GenaralId));
+            res.Furiten = promotionTiles.Exists(tuple => player.graveyard.Exists(t => t.GeneralId == tuple.Item1.GeneralId));
 
             if (promotionTiles.Count > 0)
             {
@@ -507,7 +507,7 @@ namespace MahjongAI
         {
             return evalResult.Distance <= 1
                 && hand.Count == 13
-                && hand.GroupBy(t => t.GeneralName).Count(group => group.Count() >= 2) >= 5; // 至少五对
+                && hand.GroupBy(t => t.GeneralId).Count(group => group.Count() >= 2) >= 5; // 至少五对
         }
 
         private class EvalResultComp : IComparer<EvalResult>
@@ -653,7 +653,15 @@ namespace MahjongAI
             public int Compare(Tile x, Tile y)
             {
                 int res = 0;
-                if (x.Type == "z" && aiController.getVisibleTiles().TilesCount(x) == 2) // 优先保留出过一张的字牌
+                if (aiController.player.graveyard.TileExists(x)) // 不能振听
+                {
+                    return -1;
+                }
+                else if (aiController.player.graveyard.TileExists(y)) // 不能振听
+                {
+                    return 1;
+                }
+                else if (x.Type == "z" && aiController.getVisibleTiles().TilesCount(x) == 2) // 优先保留出过一张的字牌
                 {
                     return 1;
                 }
@@ -663,13 +671,13 @@ namespace MahjongAI
                 }
                 else if ((res = aiController.getVisibleTiles().TilesCount(x) - aiController.getVisibleTiles().TilesCount(y)) != 0) // 保留枚数较多的
                 {
-                    return res;
+                    return -res;
                 }
                 else if ((res = aiController.getWeight(x) - aiController.getWeight(y)) != 0) // 保留比较狗的
                 {
                     return -res;
                 }
-                else if ((res = aiController.getDiscardedTiles().Count(t => t.Type == x.Type) - aiController.getDiscardedTiles().Count(t => t.Type == y.Type)) != 0) // 保留容易出的一门
+                else if ((res = aiController.getEnemyDiscardedTiles().Count(t => t.Type == x.Type) - aiController.getEnemyDiscardedTiles().Count(t => t.Type == y.Type)) != 0) // 保留容易出的一门
                 {
                     return res;
                 }
