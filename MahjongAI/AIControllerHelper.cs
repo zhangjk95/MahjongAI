@@ -80,6 +80,17 @@ namespace MahjongAI
             }
         }
 
+        private IEnumerable<Tile> getDiscardedTiles()
+        {
+            foreach (var p in gameData.players)
+            {
+                foreach (var tile in p.graveyard.Get(true))
+                {
+                    yield return tile;
+                }
+            }
+        }
+
         private int calcDistance()
         {
             int tmp;

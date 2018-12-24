@@ -19,5 +19,6 @@ namespace MahjongAI.Models
         public List<double> E_PromotionCount { get; set; }
         public int E_NormalPromitionCount { get; set; }
         public int E_Point { get; set; }
+        public bool ProbablyChiitoitsu { get; set; } = false;
     }
 }

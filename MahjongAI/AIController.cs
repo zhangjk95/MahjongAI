@@ -14,11 +14,15 @@ namespace MahjongAI
         private const int defaultDepth = 3;
 
         private Strategy strategy;
+        private EvalResultComp evalResultComp;
+        private ChiitoitsuTileComp chiitoitsuTileComp;
 
         public AIController(PlatformClient client, Strategy strategy = null): base(client)
         {
             MahjongHelper.getInstance();
             this.strategy = strategy ?? new Strategy();
+            evalResultComp = new EvalResultComp(this);
+            chiitoitsuTileComp = new ChiitoitsuTileComp(this);
         }
 
         public override void OnDraw(Tile tile)
@@ -111,7 +115,7 @@ namespace MahjongAI
                         tmpResult = eval13();
                     }
                     if (tmpResult != null && !shouldDef(tmpResult, discardTile) && 
-                        (shouldNaki(currentEvalResult, tmpResult) && new EvalResultComp(!isAllLastTop()).Compare(tmpResult, bestResult.Item3) > 0 // All last top 不比较得点
+                        (shouldNaki(currentEvalResult, tmpResult) && evalResultComp.Compare(tmpResult, bestResult.Item3) > 0
                         || gameData.remainingTile < 16 && currentEvalResult.Distance == 1 && tmpResult.Distance == 0)) // 特判最后四巡鸣型听 
                     {
                         bestResult = Tuple.Create(candidate, discardTile, tmpResult);
@@ -293,7 +297,6 @@ namespace MahjongAI
 
         private Tile chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, int depth = -1)
         {
-            EvalResultComp evalResultComp = new EvalResultComp(!isAllLastTop()); // All last top 不比较得点
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
             Tuple<Tile, EvalResult> bestResult = null;
@@ -321,12 +324,13 @@ namespace MahjongAI
                         if (depth == -1)
                         {
                             options.Add(Tuple.Create(tile, result));
-                            Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}{3}", 
-                                tile.Name, 
-                                result.E_PromotionCount.ToString(", ", c => c.ToString("F0")), 
-                                result.E_Point, 
+                            Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}{3}{5}",
+                                tile.Name,
+                                result.E_PromotionCount.ToString(", ", c => c.ToString("F0")),
+                                result.E_Point,
                                 result.Distance > currentDistance ? ", Distance++" : "",
-                                result.E_NormalPromitionCount != result.E_PromotionCount[0] ? "(" + result.E_NormalPromitionCount + ")" : ""));
+                                result.E_NormalPromitionCount != result.E_PromotionCount[0] ? "(" + result.E_NormalPromitionCount + ")" : "",
+                                result.ProbablyChiitoitsu ? ", Probably Chiitoitsu" : ""));
                         }
                     }
                     else
@@ -347,8 +351,18 @@ namespace MahjongAI
                     continue;
                 }
 
-                if (bestResult == null 
-                    || evalResultComp.Compare(result, bestResult.Item2) > 0 
+                if (bestResult == null)
+                {
+                    bestResult = new Tuple<Tile, EvalResult>(tile, result);
+                }
+                else if (bestResult.Item2.ProbablyChiitoitsu && result.ProbablyChiitoitsu && bestResult.Item2.E_Point == result.E_Point) // 如果确定做七对子且两种选择得点一样就按七对子的比较方法来比较
+                {
+                    if (chiitoitsuTileComp.Compare(bestResult.Item1, tile) > 0)
+                    {
+                        bestResult = new Tuple<Tile, EvalResult>(tile, result);
+                    }
+                }
+                else if (evalResultComp.Compare(result, bestResult.Item2) > 0 
                     || evalResultComp.Compare(result, bestResult.Item2) == 0 && getWeight(tile) < getWeight(bestResult.Item1))
                 {
                     bestResult = new Tuple<Tile, EvalResult>(tile, result);
@@ -459,6 +473,8 @@ namespace MahjongAI
             {
                 res.E_PromotionCount.Add(promotionTiles.Count > 0 ? promotionTiles.Sum(tuple => tuple.Item2.E_PromotionCount[i]) / promotionTiles.Count : 0);
             }
+
+            res.ProbablyChiitoitsu = probablyChiitoitsu(res, player.hand);
             
             return res;
         }
@@ -487,14 +503,21 @@ namespace MahjongAI
             return res;
         }
 
+        private bool probablyChiitoitsu(EvalResult evalResult, Hand hand)
+        {
+            return evalResult.Distance <= 1
+                && hand.Count == 13
+                && hand.GroupBy(t => t.GeneralName).Count(group => group.Count() >= 2) >= 5; // 至少五对
+        }
+
         private class EvalResultComp : IComparer<EvalResult>
         {
             private E_PromotionCountComp e_PromotionComp = new E_PromotionCountComp();
-            private bool comparePoint;
+            private AIController aiController;
 
-            public EvalResultComp(bool comparePoint)
+            public EvalResultComp(AIController aiController)
             {
-                this.comparePoint = comparePoint;
+                this.aiController = aiController;
             }
 
             public int Compare(EvalResult x, EvalResult y)
@@ -536,7 +559,7 @@ namespace MahjongAI
                 {
                     return res;
                 }
-                else if (comparePoint && (res = (x.E_Point * x.E_PromotionCount.Product(n => n)).CompareTo(y.E_Point * y.E_PromotionCount.Product(n => n))) != 0) // 期望得点数 * 进张数的积，如comparePoint为false则不比较
+                else if (shouldComparePoint() && (res = (x.E_Point * x.E_PromotionCount.Product(n => n)).CompareTo(y.E_Point * y.E_PromotionCount.Product(n => n))) != 0) // 期望得点数 * 进张数的积，如shouldComparePoint()为false则不比较
                 {
                     return res;
                 }
@@ -589,6 +612,11 @@ namespace MahjongAI
                     return x.CompareTo(y);
                 }
             }
+
+            private bool shouldComparePoint()
+            {
+                return !aiController.isAllLastTop();
+            }
         }
 
         private class E_PromotionCountComp : IComparer<List<double>>
@@ -604,6 +632,51 @@ namespace MahjongAI
                 }
 
                 return 0;
+            }
+        }
+
+        /// <summary>
+        /// Compare which tile should be kept for Chiitoitsu.
+        /// </summary>
+        private class ChiitoitsuTileComp : IComparer<Tile>
+        {
+            private AIController aiController;
+
+            public ChiitoitsuTileComp(AIController aiController)
+            {
+                this.aiController = aiController;
+            }
+
+            /// <summary>
+            /// Return a value larger than 0 if x should be kept.
+            /// </summary>
+            public int Compare(Tile x, Tile y)
+            {
+                int res = 0;
+                if (x.Type == "z" && aiController.getVisibleTiles().TilesCount(x) == 2) // 优先保留出过一张的字牌
+                {
+                    return 1;
+                }
+                else if (y.Type == "z" && aiController.getVisibleTiles().TilesCount(y) == 2) // 优先保留出过一张的字牌
+                {
+                    return -1;
+                }
+                else if ((res = aiController.getVisibleTiles().TilesCount(x) - aiController.getVisibleTiles().TilesCount(y)) != 0) // 保留枚数较多的
+                {
+                    return res;
+                }
+                else if ((res = aiController.getWeight(x) - aiController.getWeight(y)) != 0) // 保留比较狗的
+                {
+                    return -res;
+                }
+                else if ((res = aiController.getDiscardedTiles().Count(t => t.Type == x.Type) - aiController.getDiscardedTiles().Count(t => t.Type == y.Type)) != 0) // 保留容易出的一门
+                {
+                    return res;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
     }
