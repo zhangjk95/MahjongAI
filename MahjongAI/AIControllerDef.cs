@@ -183,6 +183,8 @@ namespace MahjongAI
                 res.Risk += 1;
             }
 
+            res.Risk = Math.Max(res.Risk, 0);
+
             return res;
         }
 
