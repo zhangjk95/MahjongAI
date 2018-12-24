@@ -238,7 +238,7 @@ namespace MahjongAI
                         token = data["connect_token"],
                         game_uuid = data["game_uuid"]
                     }).Wait();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(3000);
                 }
             });
 
@@ -281,7 +281,7 @@ namespace MahjongAI
                     InvokeOnLogin(resume: false, succeeded: true);
                 }
             }
-            if (message.MethodName == ".lq.NotifyRoomGameStart")
+            if (message.MethodName == ".lq.NotifyRoomGameStart" || message.MethodName == ".lq.NotifyMatchGameStart")
             {
                 StartGame(message.Json, false);
             }
