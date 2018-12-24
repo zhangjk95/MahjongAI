@@ -73,7 +73,6 @@ namespace MahjongAI
 
         private Tile chooseDiscardForDef(out DefEvalResult defEvalResult, List<Tuple<Tile, EvalResult>> options)
         {
-            EvalResultComp evalResultComp = new EvalResultComp(!isAllLastTop());
             var evalResults = new Dictionary<string, DefEvalResult>();
             Tuple<Tile, DefEvalResult> bestResult = null;
             Trace.WriteLine("Defense: " + gameData.players.Where(p => defLevel(p) > 0).ToString(", ", p => string.Format("player({0}):{1}", p.id, defLevel(p))));
