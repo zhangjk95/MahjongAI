@@ -143,7 +143,7 @@ namespace MahjongAI
         static void Main(string[] args)
         {
             var listener = new ConsoleTraceListener();
-            listener.Filter = new EventTypeFilter(SourceLevels.Off);
+            listener.Filter = new EventTypeFilter(SourceLevels.Warning);
             Trace.Listeners.Add(listener);
             StreamWriter writer = File.CreateText("log.txt");
             writer.AutoFlush = true;

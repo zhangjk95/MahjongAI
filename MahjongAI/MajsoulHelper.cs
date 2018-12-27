@@ -86,7 +86,7 @@ namespace MahjongAI
                 data = rawData,
             }));
 
-            return parseResult(recv());
+            return parseResult(recv(), rawData);
         }
 
         public MajsoulMessage decodeActionPrototype(string actionName, byte[] data)
@@ -99,10 +99,10 @@ namespace MahjongAI
                 data = rawData,
             }));
 
-            return parseResult(recv());
+            return parseResult(recv(), rawData);
         }
 
-        public MajsoulMessage parseResult(string str)
+        public MajsoulMessage parseResult(string str, string rawData)
         {
             MajsoulMessage res;
             try
@@ -125,6 +125,7 @@ namespace MahjongAI
                     {
                         Success = false,
                         MethodName = (string)obj["methodName"],
+                        Data = rawData,
                     };
                 }
             }
@@ -133,6 +134,7 @@ namespace MahjongAI
                 res = new MajsoulMessage
                 {
                     Success = false,
+                    Data = rawData,
                 };
             }
 

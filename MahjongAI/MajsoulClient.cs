@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 
 using Newtonsoft.Json.Linq;
 using WebSocketSharp;
@@ -405,8 +406,11 @@ namespace MahjongAI
 
                 while (pendingActions.Count > 1)
                 {
-                    inited = true;
                     var actionMessage = pendingActions.Dequeue();
+                    if (actionMessage.MethodName == "ActionNewRound")
+                    {
+                        inited = true;
+                    }
                     HandleMessage(actionMessage, forSync: true);
                 }
 
@@ -695,8 +699,9 @@ namespace MahjongAI
                 int length = await args.Data.ReadAsync(buffer, 0, buffer.Length);
                 MajsoulMessage message = majsoulHelper.decode(buffer, 0, length);
                 HandleMessage(message);
-            } catch (Exception)
+            } catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 Close(true);
             }
         }
@@ -726,8 +731,9 @@ namespace MahjongAI
             {
                 await ws.Send(buffer);
             }
-            catch
+            catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 Close(true);
             }
         }
