@@ -19,21 +19,41 @@ namespace MahjongAI
             if (strategy.DefenceLevel == Strategy.DefenceLevelType.DefendReachedOya && gameData.players.All(p => !p.reached || p.direction != Direction.E)) return false;
             if (strategy.DefenceLevel == Strategy.DefenceLevelType.DefendReachedPlayers && gameData.players.All(p => !p.reached)) return false;
 
-            return (gameData.players.Any(p => defLevel(p) >= 4)
-                    && (evalResult.Distance >= 3
-                        || evalResult.Distance == 2 && (evalResult.E_PromotionCount[0] <= 8 || evalResult.E_Point < 8000 || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000)
-                        || evalResult.Distance == 1 && (evalResult.E_PromotionCount[0] <= 4 || evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000)
-                        || (evalResult.Distance == 0 && (evalResult.E_Point < 2000 || evalResult.E_PromotionCount[0] < 1) || gameData.remainingTile / 4 <= evalResult.Distance * 2)
-                            && (discardTile == null || evalDef(discardTile).Risk > 15))
-                || gameData.players.Any(p => defLevel(p) >= 2)
-                    && (evalResult.Distance >= 3
-                        || evalResult.Distance == 2 && (evalResult.E_PromotionCount[0] <= 8 || evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000)
-                        || evalResult.Distance == 1 && (evalResult.E_PromotionCount[0] <= 4 || evalResult.E_Point < 2000 || evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000)
-                        || (evalResult.Distance == 0 && (evalResult.E_Point < 1000 || evalResult.E_PromotionCount[0] < 1) || evalResult.Distance > 0 && gameData.remainingTile / 4 <= evalResult.Distance * 2)
-                            && (discardTile == null || evalDef(discardTile).Risk > 15))
-                || gameData.players.Any(p => defLevel(p) >= 1)
-                    && evalResult.Distance >= 2)
-                && !isAllLastBottom(); // 不是All last四位
+            return
+                (gameData.players.Any(p => defLevel(p) >= 4) && shouldDef4(evalResult, discardTile)
+                    || gameData.players.Any(p => defLevel(p) >= 2) && shouldDef2(evalResult, discardTile)
+                    || gameData.players.Any(p => defLevel(p) >= 1) && shouldDef1(evalResult, discardTile))
+                && !isAllLastBottom() // 不是All last四位
+                && player.point > gameData.getPlayerByRanking(3).point - 10000; // 与三位点差不到10000
+        }
+
+        private bool shouldDef4(EvalResult evalResult, Tile discardTile = null)
+        {
+            return evalResult.Distance >= 3
+                || evalResult.Distance == 2 && (evalResult.E_Point < 8000 || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000 || evalResult.E_PromotionCount[0] <= 8)
+                || evalResult.Distance == 1 && ((evalResult.E_PromotionCount[0] <= 20 && evalResult.E_Point < 4000) || (evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000) || evalResult.E_PromotionCount[0] <= 4)
+                || evalResult.Distance == 0 && (evalResult.E_Point < 2000 || evalResult.E_PromotionCount[0] < 1) && isTileTooDangerous(discardTile)
+                || gameData.remainingTile / 4 <= evalResult.Distance * 2 && isTileTooDangerous(discardTile);
+        }
+
+        private bool shouldDef2(EvalResult evalResult, Tile discardTile = null)
+        {
+            return evalResult.Distance >= 3
+                || evalResult.Distance == 2 && (evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000 || evalResult.E_PromotionCount[0] <= 8)
+                || evalResult.Distance == 1 && ((evalResult.E_PromotionCount[0] <= 20 && evalResult.E_Point < 2000) || (evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000) || evalResult.E_PromotionCount[0] <= 4)
+                || evalResult.Distance == 0 && (evalResult.E_Point < 1000 || evalResult.E_PromotionCount[0] < 1) && isTileTooDangerous(discardTile)
+                || gameData.remainingTile / 4 <= evalResult.Distance * 2 && isTileTooDangerous(discardTile);
+        }
+
+        private bool shouldDef1(EvalResult evalResult, Tile discardTile = null)
+        {
+            // 最后三巡
+            return evalResult.Distance >= 2;
+        }
+
+        private bool isTileTooDangerous(Tile tile)
+        {
+            return tile != null && evalDef(tile).Risk > 15;
         }
 
         private int defLevel(Player forPlayer)
