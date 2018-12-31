@@ -24,14 +24,21 @@ namespace MahjongAI
                     || gameData.players.Any(p => defLevel(p) >= 2) && shouldDef2(evalResult, discardTile)
                     || gameData.players.Any(p => defLevel(p) >= 1) && shouldDef1(evalResult, discardTile))
                 && !isAllLastBottom() // 不是All last四位
-                && player.point > gameData.getPlayerByRanking(3).point - 10000; // 与三位点差不到10000
+                && !(player.point > gameData.getPlayerByRanking(3).point - 10000 && (gameData.direction == Direction.S || player.direction == Direction.E)); // 南场或亲家的时候比三位低了10000点以上就不防守
         }
 
         private bool shouldDef4(EvalResult evalResult, Tile discardTile = null)
         {
             return evalResult.Distance >= 3
-                || evalResult.Distance == 2 && (evalResult.E_Point < 8000 || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000 || evalResult.E_PromotionCount[0] <= 8)
-                || evalResult.Distance == 1 && ((evalResult.E_PromotionCount[0] <= 20 && evalResult.E_Point < 4000) || (evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000) || evalResult.E_PromotionCount[0] <= 4)
+                || evalResult.Distance == 2 && (
+                    evalResult.E_Point < 8000
+                    || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000
+                    || evalResult.E_PromotionCount[0] <= 8)
+                || evalResult.Distance == 1 && (
+                    (evalResult.E_Point < 2000 && isTileTooDangerous(discardTile))
+                    || (evalResult.E_PromotionCount[0] <= 20 && evalResult.E_Point < 4000)
+                    || (evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000)
+                    || evalResult.E_PromotionCount[0] <= 4)
                 || evalResult.Distance == 0 && (evalResult.E_Point < 2000 || evalResult.E_PromotionCount[0] < 1) && isTileTooDangerous(discardTile)
                 || gameData.remainingTile / 4 <= evalResult.Distance * 2 && isTileTooDangerous(discardTile);
         }
@@ -39,8 +46,15 @@ namespace MahjongAI
         private bool shouldDef2(EvalResult evalResult, Tile discardTile = null)
         {
             return evalResult.Distance >= 3
-                || evalResult.Distance == 2 && (evalResult.E_Point < 4000 || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000 || evalResult.E_PromotionCount[0] <= 8)
-                || evalResult.Distance == 1 && ((evalResult.E_PromotionCount[0] <= 20 && evalResult.E_Point < 2000) || (evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000) || evalResult.E_PromotionCount[0] <= 4)
+                || evalResult.Distance == 2 && (
+                    evalResult.E_Point < 4000
+                    || evalResult.E_PromotionCount[0] <= 15 && evalResult.E_Point < 12000
+                    || evalResult.E_PromotionCount[0] <= 8)
+                || evalResult.Distance == 1 && (
+                    (evalResult.E_Point < 1000 && isTileTooDangerous(discardTile))
+                    || (evalResult.E_PromotionCount[0] <= 20 && evalResult.E_Point < 2000)
+                    || (evalResult.E_PromotionCount[0] <= 9 && evalResult.E_Point < 8000)
+                    || evalResult.E_PromotionCount[0] <= 4)
                 || evalResult.Distance == 0 && (evalResult.E_Point < 1000 || evalResult.E_PromotionCount[0] < 1) && isTileTooDangerous(discardTile)
                 || gameData.remainingTile / 4 <= evalResult.Distance * 2 && isTileTooDangerous(discardTile);
         }
