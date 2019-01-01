@@ -11,7 +11,7 @@ namespace MahjongAI
 {
     partial class AIController : Controller
     {
-        private const int defaultDepth = 3;
+        private const int DEFAULT_DEPTH = 3;
 
         private Strategy strategy;
         private EvalResultComp evalResultComp;
@@ -54,7 +54,7 @@ namespace MahjongAI
             EvalResult currentEvalResult = eval13();
             fromPlayer.graveyard.Remove(tile);
             player.hand.Add(tile);
-            EvalResult currentEvalResult14 = eval14(tile, 1, isLastTile: gameData.remainingTile == 0);
+            EvalResult currentEvalResult14 = eval14(tile, 1, false, isLastTile: gameData.remainingTile == 0);
             player.hand.Remove(tile);
             if (currentEvalResult14.Distance == -1 && !currentEvalResult.Furiten && currentEvalResult14.E_Point > 0)
             {
@@ -99,7 +99,7 @@ namespace MahjongAI
                     EvalResult tmpResult;
                     if (candidate.type != FuuroType.minkan)
                     {
-                        discardTile = chooseDiscardForAtk(out tmpResult);
+                        discardTile = chooseDiscardForAtk(out tmpResult, calcOptimization: true);
 
                         // 不能食替
                         if (discardTile != null 
@@ -160,7 +160,7 @@ namespace MahjongAI
         private void decideMove(bool rightAfterNaki = false) {
             EvalResult evalResult;
             List<Tuple<Tile, EvalResult>> options;
-            Tile discardTile = chooseDiscardForAtk(out options, out evalResult);
+            Tile discardTile = chooseDiscardForAtk(out options, out evalResult, calcOptimization: true);
             if (!shouldDef(evalResult, discardTile))
             {
                 if (!rightAfterNaki && shouldAnKan(discardTile))
@@ -189,6 +189,8 @@ namespace MahjongAI
 
         private bool shouldReach(Tile discardTile, EvalResult evalResult)
         {
+            if (player.reached || player.fuuro.VisibleCount != 0 || evalResult.Distance > 0) return false;
+
             bool changeRanking = false;
             int rankingWithReach = 0;
             int rankingWithoutReach = 0;
@@ -206,12 +208,12 @@ namespace MahjongAI
             player.graveyard.Remove(discardTile);
             player.hand.Add(discardTile);
 
-            return !player.reached && player.fuuro.VisibleCount == 0 && gameData.remainingTile >= 4 && evalResult.Distance == 0
+            return gameData.remainingTile >= 4 // 牌山还有枚数
                 && (evalResultWithoutReach.E_Point < 3500 + evalResult.E_PromotionCount[0] * 500 || gameData.players.Count(p => p.reached) >= 2) // 期望得点越小或听牌枚数越多，越应该立直 或 立直人数 >=2
-                && evalResult.E_PromotionCount[0] > 0 // 没有空听
                 && !shouldDef(evalResult) // 没有在防守状态
                 && !(isAllLast() && !changeRanking && !(player.direction == Direction.E && rankingWithoutReach > 1) && evalResultWithoutReach.E_Point > 0) // 如果All last且立直不改变顺位，除非是尾亲且和了也不是top，否则不立直
-                && evalResult.E_PromotionCount[0] > 1; // 枚数只剩1张就不立直
+                && evalResult.E_PromotionCount[0] > 1 // 没有空听或听枚数只剩1张的牌
+                && evalResult.OptimizationCount < evalResult.E_PromotionCount[0] * 3; // 改良数量不是特别多
         }
 
         private int expectedRankingWhenAgari(bool riichi)
@@ -283,19 +285,19 @@ namespace MahjongAI
                 || isAllLastTop() && hasYakuhai(); // All last top 速攻
         }
 
-        public Tile chooseDiscardForAtk(int depth = -1)
+        public Tile chooseDiscardForAtk(bool calcOptimization, int depth = -1)
         {
             EvalResult evalResult;
-            return chooseDiscardForAtk(out evalResult, depth);
+            return chooseDiscardForAtk(out evalResult, calcOptimization, depth);
         }
 
-        private Tile chooseDiscardForAtk(out EvalResult evalResult, int depth = -1)
+        private Tile chooseDiscardForAtk(out EvalResult evalResult, bool calcOptimization, int depth = -1)
         {
             List<Tuple<Tile, EvalResult>> options;
-            return chooseDiscardForAtk(out options, out evalResult, depth);
+            return chooseDiscardForAtk(out options, out evalResult, calcOptimization, depth);
         }
 
-        private Tile chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, int depth = -1)
+        private Tile chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, bool calcOptimization, int depth = -1)
         {
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
@@ -319,18 +321,12 @@ namespace MahjongAI
                     var tmpDistance = calcDistance(out tmpNormalDistance);
                     if (tmpDistance <= currentDistance || depth == -1 && currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance || tmpDistance == 0 && currentDistance == -1) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变，或者当前是无番和且打掉之后能保持听牌
                     {
-                        var result = evalResults[tile.Name] = eval13(depth);
+                        var result = evalResults[tile.Name] = eval13(depth, calcOptimization: calcOptimization);
                         result.DiscardedDoraCount = doraValue(tile);
                         if (depth == -1)
                         {
                             options.Add(Tuple.Create(tile, result));
-                            Trace.WriteLine(string.Format("Option: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}{3}{5}",
-                                tile.Name,
-                                result.E_PromotionCount.ToString(", ", c => c.ToString("F0")),
-                                result.E_Point,
-                                result.Distance > currentDistance ? ", Distance++" : "",
-                                result.E_NormalPromitionCount != result.E_PromotionCount[0] ? "(" + result.E_NormalPromitionCount + ")" : "",
-                                result.ProbablyChiitoitsu ? ", Probably Chiitoitsu" : ""));
+                            Trace.WriteLine(string.Format("Option: discard {0}, {1}", tile.Name, result.ToString(currentDistance)));
                         }
                     }
                     else
@@ -377,12 +373,7 @@ namespace MahjongAI
                 }
                 else
                 {
-                    Trace.WriteLine(string.Format("BestResult: discard {0}, E_PromotionCount: [{1}]{4}, E_Point: {2}, Distance: {3}",
-                    bestResult.Item1.Name,
-                    bestResult.Item2.E_PromotionCount.ToString(", ", c => c.ToString("F0")),
-                    bestResult.Item2.E_Point,
-                    bestResult.Item2.Distance,
-                    bestResult.Item2.E_NormalPromitionCount != bestResult.Item2.E_PromotionCount[0] ? "(" + bestResult.Item2.E_NormalPromitionCount + ")" : ""));
+                    Trace.WriteLine(string.Format("BestResult: discard {0}, {1}", bestResult.Item1.Name, bestResult.Item2.ToString(currentDistance)));
                 }
             }
             
@@ -396,21 +387,22 @@ namespace MahjongAI
             return bestResult.Item1;
         }
 
-        private EvalResult eval13(int depth = -1, bool riichi = true, bool tsumo = false)
+        private EvalResult eval13(int depth = -1, bool riichi = true, bool tsumo = false, bool calcOptimization = false)
         {
             var res = new EvalResult();
             int normalDistance;
             res.Distance = calcDistance(out normalDistance);
+            calcOptimization = calcOptimization && res.Distance <= 1; // 为了减少计算量，只有一向听或听牌时才计算改良
             res.NormalDistance = normalDistance;
             if (depth == -1)
             {
-                if (res.Distance > defaultDepth - 1) // 如果向听数高就减少搜索深度
+                if (res.Distance > DEFAULT_DEPTH - 1) // 如果向听数高就减少搜索深度
                 {
-                    depth = defaultDepth - 1;
+                    depth = DEFAULT_DEPTH - 1;
                 }
                 else
                 {
-                    depth = defaultDepth;
+                    depth = DEFAULT_DEPTH;
                 }
             }
             res.DoraInFuuroCount = player.fuuro.Tiles.Sum(t => doraValue(t));
@@ -418,6 +410,7 @@ namespace MahjongAI
             res.VisibleFuuroCount = player.fuuro.VisibleCount;
             res.KanCount = player.fuuro.Count(f => f.type == FuuroType.ankan || f.type == FuuroType.kakan || f.type == FuuroType.minkan);
             var promotionTiles = new List<Tuple<Tile, EvalResult>>();
+            var potentialOptimizationTiles = new List<Tuple<Tile, EvalResult>>();
             var evalResults = new Dictionary<string, EvalResult>();
             var normalDistanceResults = new Dictionary<string, int>();
             var candidates = new HashSet<string>();
@@ -433,9 +426,14 @@ namespace MahjongAI
                         player.hand.Add(tile);
 
                         int tmpNormalDistance;
-                        if (calcDistance(out tmpNormalDistance) < res.Distance)
+                        int tmpDistance = calcDistance(out tmpNormalDistance);
+                        if (tmpDistance < res.Distance)
                         {
                             result = evalResults[tile.Name] = eval14(tile, depth, riichi, tsumo);
+                        }
+                        else if (calcOptimization)
+                        {
+                            result = evalResults[tile.Name] = eval14(tile, res.Distance + 2, riichi, tsumo);
                         }
                         else
                         {
@@ -445,13 +443,16 @@ namespace MahjongAI
                         normalDistanceResults[tile.Name] = tmpNormalDistance;
                         player.hand.Remove(tile);
                     }
-                    if (normalDistanceResults[tile.Name] < res.NormalDistance && normalDistanceResults[tile.Name] <= res.Distance)
-                    {
-                        res.E_NormalPromitionCount++;
-                    }
                     if (result != null)
                     {
-                        promotionTiles.Add(Tuple.Create(tile, result));
+                        if (result.Distance < res.Distance)
+                        {
+                            promotionTiles.Add(Tuple.Create(tile, result));
+                        }
+                        else
+                        {
+                            potentialOptimizationTiles.Add(Tuple.Create(tile, result));
+                        }
                     }
                 }
             }
@@ -474,7 +475,14 @@ namespace MahjongAI
                 res.E_PromotionCount.Add(promotionTiles.Count > 0 ? promotionTiles.Sum(tuple => tuple.Item2.E_PromotionCount[i]) / promotionTiles.Count : 0);
             }
 
+            res.E_NormalPromitionCount = promotionTiles.Count(tuple => normalDistanceResults[tuple.Item1.Name] < res.NormalDistance && normalDistanceResults[tuple.Item1.Name] <= res.Distance);
+
             res.ProbablyChiitoitsu = probablyChiitoitsu(res, player.hand);
+
+            if (calcOptimization)
+            {
+                res.OptimizationCount = potentialOptimizationTiles.Count(tuple => evalResultComp.Compare(tuple.Item2, res) > 0);
+            }
             
             return res;
         }
@@ -492,15 +500,14 @@ namespace MahjongAI
                     res.E_Point = calcPoint(lastTile, riichi, tsumo, isLastTile);
                 }
                 res.E_PromotionCount = new List<double>();
+                return res;
             }
             else
             {
                 EvalResult tmpResult;
-                chooseDiscardForAtk(out tmpResult, depth - 1);
-                res.E_Point = tmpResult.E_Point;
-                res.E_PromotionCount = tmpResult.E_PromotionCount;
+                chooseDiscardForAtk(out tmpResult, calcOptimization: false, depth: depth - 1);
+                return tmpResult;
             }
-            return res;
         }
 
         private bool probablyChiitoitsu(EvalResult evalResult, Hand hand)
@@ -588,6 +595,10 @@ namespace MahjongAI
                     return res;
                 }
                 else if ((res = x.KanCount.CompareTo(y.KanCount)) != 0) // 杠的数量
+                {
+                    return res;
+                }
+                else if (x.OptimizationCount != -1 && y.OptimizationCount != -1 && (res = x.OptimizationCount.CompareTo(y.OptimizationCount)) != 0) // 改良的数量
                 {
                     return res;
                 }

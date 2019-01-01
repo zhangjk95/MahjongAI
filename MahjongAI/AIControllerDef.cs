@@ -117,7 +117,7 @@ namespace MahjongAI
                 {
                     var atkEvalResult = options.Where(tuple => tuple.Item1.Name == tile.Name).DefaultIfEmpty(Tuple.Create<Tile, EvalResult>(null, null)).First().Item2;
                     var result = evalResults[tile.Name] = evalDef(tile, atkEvalResult);
-                    Trace.WriteLine(string.Format("Option: discard {0}, Risk: {1:0.##}{2}{3}", tile.Name, result.Risk, result.Risk == 0 ? "(" + result.RiskForOthers.ToString("0.##") + ")" : "", result.Bonus != 0 ? "[-" + result.Bonus.ToString("0.##") + "]" : ""));
+                    Trace.WriteLine(string.Format("Option: discard {0}, {1}", tile.Name, result));
                     if (bestResult == null
                         || defEvalResultComp.Compare(result, bestResult.Item2) > 0)
                     {
@@ -135,7 +135,7 @@ namespace MahjongAI
                 }
             }
 
-            Trace.WriteLine(string.Format("BestResult: discard {0}, Risk: {1:0.##}{2}{3}", bestResult.Item1.Name, bestResult.Item2.Risk, bestResult.Item2.Risk == 0 ? "(" + bestResult.Item2.RiskForOthers.ToString("0.##") + ")" : "", bestResult.Item2.Bonus != 0 ? "[-" + bestResult.Item2.Bonus.ToString("0.##") + "]" : ""));
+            Trace.WriteLine(string.Format("BestResult: discard {0}, {1}", bestResult.Item1.Name, bestResult.Item2));
             defEvalResult = bestResult.Item2;
             return bestResult.Item1;
         }
