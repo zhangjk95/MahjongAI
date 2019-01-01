@@ -158,9 +158,7 @@ namespace MahjongAI
         }
 
         private void decideMove(bool rightAfterNaki = false) {
-            EvalResult evalResult;
-            List<Tuple<Tile, EvalResult>> options;
-            Tile discardTile = chooseDiscardForAtk(out options, out evalResult, calcOptimization: true);
+            Tile discardTile = chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, calcOptimization: true);
             if (!shouldDef(evalResult, discardTile))
             {
                 if (!rightAfterNaki && shouldAnKan(discardTile))
@@ -287,14 +285,12 @@ namespace MahjongAI
 
         public Tile chooseDiscardForAtk(bool calcOptimization, int depth = -1)
         {
-            EvalResult evalResult;
-            return chooseDiscardForAtk(out evalResult, calcOptimization, depth);
+            return chooseDiscardForAtk(out EvalResult evalResult, calcOptimization, depth);
         }
 
         private Tile chooseDiscardForAtk(out EvalResult evalResult, bool calcOptimization, int depth = -1)
         {
-            List<Tuple<Tile, EvalResult>> options;
-            return chooseDiscardForAtk(out options, out evalResult, calcOptimization, depth);
+            return chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out evalResult, calcOptimization, depth);
         }
 
         private Tile chooseDiscardForAtk(out List<Tuple<Tile, EvalResult>> options, out EvalResult evalResult, bool calcOptimization, int depth = -1)
@@ -302,8 +298,7 @@ namespace MahjongAI
             var handTmp = new List<Tile>(player.hand);
             var evalResults = new Dictionary<string, EvalResult>();
             Tuple<Tile, EvalResult> bestResult = null;
-            int currentNormalDistance;
-            var currentDistance = calcDistance(out currentNormalDistance);
+            var currentDistance = calcDistance(out int currentNormalDistance);
             options = null;
             if (depth == -1)
             {
@@ -317,8 +312,7 @@ namespace MahjongAI
                 {
                     player.hand.Remove(tile);
                     player.graveyard.Add(tile);
-                    int tmpNormalDistance;
-                    var tmpDistance = calcDistance(out tmpNormalDistance);
+                    var tmpDistance = calcDistance(out int tmpNormalDistance);
                     if (tmpDistance <= currentDistance || depth == -1 && currentNormalDistance <= currentDistance + 1 && tmpNormalDistance <= currentNormalDistance || tmpDistance == 0 && currentDistance == -1) // 打掉后向听数不变，或者有希望做一般型且打掉后一般型的向听数不变，或者当前是无番和且打掉之后能保持听牌
                     {
                         var result = evalResults[tile.Name] = eval13(depth, calcOptimization: calcOptimization);
@@ -389,11 +383,12 @@ namespace MahjongAI
 
         private EvalResult eval13(int depth = -1, bool riichi = true, bool tsumo = false, bool calcOptimization = false)
         {
-            var res = new EvalResult();
-            int normalDistance;
-            res.Distance = calcDistance(out normalDistance);
+            var res = new EvalResult
+            {
+                Distance = calcDistance(out int normalDistance),
+                NormalDistance = normalDistance
+            };
             calcOptimization = calcOptimization && res.Distance <= 0; // 为了减少计算量，只有听牌时才计算改良
-            res.NormalDistance = normalDistance;
             if (depth == -1)
             {
                 if (res.Distance > DEFAULT_DEPTH - 1) // 如果向听数高就减少搜索深度
@@ -414,26 +409,28 @@ namespace MahjongAI
             var evalResults = new Dictionary<string, EvalResult>();
             var normalDistanceResults = new Dictionary<string, int>();
             var candidates = new HashSet<string>();
-            var visibleTiles = getVisibleTiles().ToList();
+            var visibleTiles = new HashSet<int>(getVisibleTiles().Select(t => t.Id));
             for (var i = 0; i < Tile.TotalCount; i++)
             {
-                if (!visibleTiles.Exists(t => t.Id == i))
+                if (!visibleTiles.Contains(i))
                 {
                     var tile = new Tile(i);
-                    EvalResult result;
-                    if (!evalResults.TryGetValue(tile.Name, out result))
+                    if (!evalResults.TryGetValue(tile.Name, out EvalResult result))
                     {
                         player.hand.Add(tile);
 
-                        int tmpNormalDistance;
-                        int tmpDistance = calcDistance(out tmpNormalDistance);
-                        if (tmpDistance < res.Distance)
+                        EvalResult tmpEvalResult = new EvalResult
                         {
-                            result = evalResults[tile.Name] = eval14(tile, depth, riichi, tsumo);
+                            Distance = calcDistance(out int tmpNormalDistance),
+                            NormalDistance = tmpNormalDistance
+                        };
+                        if (tmpEvalResult.Distance < res.Distance)
+                        {
+                            result = evalResults[tile.Name] = eval14(tile, depth, riichi, tsumo, partialEvalResult: tmpEvalResult);
                         }
                         else if (calcOptimization)
                         {
-                            result = evalResults[tile.Name] = eval14(tile, res.Distance + 2, riichi, tsumo);
+                            result = evalResults[tile.Name] = eval14(tile, res.Distance + 2, riichi, tsumo, partialEvalResult: tmpEvalResult);
                         }
                         else
                         {
@@ -487,12 +484,17 @@ namespace MahjongAI
             return res;
         }
 
-        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true, bool tsumo = false, bool isLastTile = false)
+        private EvalResult eval14(Tile lastTile, int depth, bool riichi = true, bool tsumo = false, bool isLastTile = false, EvalResult partialEvalResult = null)
         {
-            var res = new EvalResult();
-            int normalDistance;
-            res.Distance = calcDistance(out normalDistance);
-            res.NormalDistance = normalDistance;
+            var res = partialEvalResult;
+            if (res == null)
+            {
+                res = new EvalResult();
+                int normalDistance;
+                res.Distance = calcDistance(out normalDistance);
+                res.NormalDistance = normalDistance;
+            }
+            
             if (depth <= 1 || res.Distance == -1)
             {
                 if (res.Distance == -1)

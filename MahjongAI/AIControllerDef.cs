@@ -100,9 +100,7 @@ namespace MahjongAI
 
         public Tile chooseDiscardForDef(List<Tuple<Tile, EvalResult>> options)
         {
-            DefEvalResult defEvalResult;
-            var res = chooseDiscardForDef(out defEvalResult, options);
-            return res;
+            return chooseDiscardForDef(out DefEvalResult defEvalResult, options);
         }
 
         private Tile chooseDiscardForDef(out DefEvalResult defEvalResult, List<Tuple<Tile, EvalResult>> options)

@@ -93,8 +93,7 @@ namespace MahjongAI
 
         private int calcDistance()
         {
-            int tmp;
-            return calcDistance(out tmp);
+            return calcDistance(out int tmp);
         }
 
         private int calcDistance(out int normalDistance)
@@ -104,8 +103,10 @@ namespace MahjongAI
 
         private FuuroGroup tryGetFuuroGroup(FuuroType type, IEnumerable<Tuple<int, int>> req, params Tile[] tiles)
         {
-            var res = new FuuroGroup();
-            res.type = type;
+            var res = new FuuroGroup
+            {
+                type = type
+            };
 
             foreach (var reqItem in req)
             {
