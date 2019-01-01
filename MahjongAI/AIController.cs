@@ -54,7 +54,7 @@ namespace MahjongAI
             EvalResult currentEvalResult = eval13();
             fromPlayer.graveyard.Remove(tile);
             player.hand.Add(tile);
-            EvalResult currentEvalResult14 = eval14(tile, 1, false, isLastTile: gameData.remainingTile == 0);
+            EvalResult currentEvalResult14 = eval14(tile, 1, isLastTile: gameData.remainingTile == 0);
             player.hand.Remove(tile);
             if (currentEvalResult14.Distance == -1 && !currentEvalResult.Furiten && currentEvalResult14.E_Point > 0)
             {
