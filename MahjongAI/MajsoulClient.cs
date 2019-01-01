@@ -556,7 +556,7 @@ namespace MahjongAI
                 gameData.players[NormalizedPlayerId(i)].hand = new Hand();
             }
 
-            int oyaNum = (4 - playerSeat + gameData.seq) % 4;
+            int oyaNum = (4 - playerSeat + (int)data["ju"]) % 4;
             gameData.players[oyaNum].direction = Direction.E;
             gameData.players[(oyaNum + 1) % 4].direction = Direction.S;
             gameData.players[(oyaNum + 2) % 4].direction = Direction.W;
