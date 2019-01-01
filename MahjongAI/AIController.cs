@@ -219,7 +219,7 @@ namespace MahjongAI
         private int expectedRankingWhenAgari(bool riichi)
         {
             int res = gameData.getRankingByPlayer(player);
-            double extraPoint = gameData.seq2 * 100 + gameData.players.Count(p => p.reached) * 1000 + gameData.reachStickCount * 1000;
+            double extraPoint = gameData.players.Count(p => p.reached) * 1000 + gameData.reachStickCount * 1000;
             for (var i = res - 1; i >= 1; i--)
             {
                 var target = gameData.getPlayerByRanking(i);
@@ -233,7 +233,7 @@ namespace MahjongAI
 
                 // 自摸
                 point = eval13(1, riichi, tsumo: true).E_Point;
-                if (player.point + point + extraPoint + gameData.seq2 * 300 < target.point - point * (player.direction == Direction.E ? 0.33 : target.direction == Direction.E ? 0.5 : 0.25) - gameData.seq2 * (target.direction == Direction.E ? 2 : 1))
+                if (player.point + point + extraPoint + gameData.seq2 * 300 < target.point - point * (player.direction == Direction.E ? 0.33 : target.direction == Direction.E ? 0.5 : 0.25) - gameData.seq2 * 100)
                 {
                     break;
                 }

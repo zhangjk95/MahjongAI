@@ -538,7 +538,7 @@ namespace MahjongAI
                     break;
             }
 
-            gameData.seq = (int)data["ju"];
+            gameData.seq = (int)data["ju"] + 1;
             gameData.seq2 = (int)data["ben"];
             gameData.reachStickCount = (int)data["liqibang"];
 

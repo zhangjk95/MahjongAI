@@ -97,7 +97,7 @@ namespace MahjongAI
             Trace.WriteLine(string.Format("{0} {1}{2}{3}, points: {4}", 
                 !continued ? "Init" : "Reinit", 
                 direction, 
-                seq + 1, 
+                seq, 
                 seq2 != 0 ? "(" + seq2 + ")" : "", 
                 string.Join(", ", players.Select(player => player.point))));
         }
