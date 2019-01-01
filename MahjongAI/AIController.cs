@@ -392,7 +392,7 @@ namespace MahjongAI
             var res = new EvalResult();
             int normalDistance;
             res.Distance = calcDistance(out normalDistance);
-            calcOptimization = calcOptimization && res.Distance <= 1; // 为了减少计算量，只有一向听或听牌时才计算改良
+            calcOptimization = calcOptimization && res.Distance <= 0; // 为了减少计算量，只有听牌时才计算改良
             res.NormalDistance = normalDistance;
             if (depth == -1)
             {
