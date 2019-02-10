@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using System.Net;
 
 using Newtonsoft.Json.Linq;
 using WebSocketSharp;
@@ -17,7 +18,7 @@ namespace MahjongAI
 {
     class MajsoulClient : PlatformClient
     {
-        private const string host = "mj-srv-1.majsoul.com:4016";
+        private const string serverListUrl = "https://lb-hk.majsoul.com:2901/api/v0/recommend_list?service=ws-gateway&protocol=ws&ssl=true";
         private const string replaysFileName = "replays.txt";
 
         private WebSocket ws;
@@ -41,6 +42,10 @@ namespace MahjongAI
 
         public MajsoulClient(Config config) : base(config)
         {
+            var webClient = new WebClient();
+            var serverListJson = webClient.DownloadString(serverListUrl);
+            var serverList = JObject.Parse(serverListJson)["servers"];
+            var host = serverList[0];
             ws = new WebSocket("wss://" + host, onMessage: OnMessage, onError: OnError);
             ws.Connect().Wait();
             username = config.MajsoulUsername;
