@@ -17,9 +17,7 @@ After 196 matches:
 
 ### Majsoul
 
-<img src="https://user-images.githubusercontent.com/4890396/50506169-70ded000-0a2c-11e9-86c0-db1bacab369c.png" width="300"/>
-
-(To be updated...)
+<img src="https://user-images.githubusercontent.com/4890396/52532016-61181280-2d72-11e9-99b5-c834470c2677.png" width="300"/>
 
 ## How to run
 
