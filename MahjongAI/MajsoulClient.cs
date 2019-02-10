@@ -19,6 +19,7 @@ namespace MahjongAI
     class MajsoulClient : PlatformClient
     {
         private const string serverListUrl = "https://lb-hk.majsoul.com:2901/api/v0/recommend_list?service=ws-gateway&protocol=ws&ssl=true";
+        private const string gameServerListUrl = "https://lb-hk.majsoul.com:2901/api/v0/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true";
         private const string replaysFileName = "replays.txt";
 
         private WebSocket ws;
@@ -42,10 +43,7 @@ namespace MahjongAI
 
         public MajsoulClient(Config config) : base(config)
         {
-            var webClient = new WebClient();
-            var serverListJson = webClient.DownloadString(serverListUrl);
-            var serverList = JObject.Parse(serverListJson)["servers"];
-            var host = serverList[0];
+            var host = getServerHost(serverListUrl);
             ws = new WebSocket("wss://" + host, onMessage: OnMessage, onError: OnError);
             ws.Connect().Wait();
             username = config.MajsoulUsername;
@@ -235,9 +233,10 @@ namespace MahjongAI
 
             Task.Factory.StartNew(() =>
             {
+                InvokeOnUnknownEvent("Game found. Connecting...");
                 while (!gameStarted)
                 {
-                    wsGame = new WebSocket("wss://" + (string)data["game_url"], onMessage: OnMessage, onError: OnError);
+                    wsGame = new WebSocket("wss://" + getServerHost(gameServerListUrl), onMessage: OnMessage, onError: OnError);
                     wsGame.Connect().Wait();
                     Send(wsGame, ".lq.FastTest.authGame", new
                     {
@@ -245,11 +244,14 @@ namespace MahjongAI
                         game_uuid = data["game_uuid"]
                     }).Wait();
                     Thread.Sleep(3000);
+                    if (!gameStarted)
+                    {
+                        InvokeOnUnknownEvent("Failed to connect. Retrying...");
+                    }
                 }
             });
 
             SaveReplay((string)data["game_uuid"]);
-            InvokeOnGameStart(continued);
         }
 
         private int NormalizedPlayerId(int seat)
@@ -294,7 +296,8 @@ namespace MahjongAI
             else if (message.MethodName == ".lq.FastTest.authGame")
             {
                 gameStarted = true;
-                
+                InvokeOnGameStart(continued);
+
                 if (!continued)
                 {
                     Send(wsGame, ".lq.FastTest.enterGame", new { }).Wait();
@@ -753,6 +756,14 @@ namespace MahjongAI
                 Properties.Settings.Default.Save();
             }
             return uuid;
+        }
+
+        private string getServerHost(string serverListUrl)
+        {
+            var webClient = new WebClient();
+            var serverListJson = webClient.DownloadString(serverListUrl);
+            var serverList = JObject.Parse(serverListJson)["servers"];
+            return (string)serverList[0];
         }
     }
 }
