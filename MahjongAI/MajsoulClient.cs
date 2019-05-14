@@ -19,7 +19,7 @@ namespace MahjongAI
     class MajsoulClient : PlatformClient
     {
         private const string serverListUrl = "https://lb-hk.majsoul.com:7891/api/v0/recommend_list?service=ws-gateway&protocol=ws&ssl=true";
-        private const string gameServerListUrl = "https://lb-hk.majsoul.com:7891/api/v0/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true";
+        private const string gameServerListUrlTemplate = "https://lb-hk.majsoul.com:7891/api/v0/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true&location={0}";
         private const string replaysFileName = "replays.txt";
 
         private WebSocket ws;
@@ -236,7 +236,7 @@ namespace MahjongAI
                 InvokeOnUnknownEvent("Game found. Connecting...");
                 while (!gameStarted)
                 {
-                    wsGame = new WebSocket("wss://" + getServerHost(gameServerListUrl), onMessage: OnMessage, onError: OnError);
+                    wsGame = new WebSocket("wss://" + getServerHost(string.Format(gameServerListUrlTemplate, data["location"])), onMessage: OnMessage, onError: OnError);
                     wsGame.Connect().Wait();
                     Send(wsGame, ".lq.FastTest.authGame", new
                     {
