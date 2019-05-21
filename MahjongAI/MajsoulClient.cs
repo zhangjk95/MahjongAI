@@ -115,6 +115,14 @@ namespace MahjongAI
                 }
 
                 Send(ws, ".lq.Lobby.matchGame", new { match_mode = typeNum }).Wait();
+
+                Timer timer = new Timer((state) => {
+                    if (!gameStarted)
+                    {
+                        InvokeOnUnknownEvent("Game matching timed out.");
+                        Close(true);
+                    }
+                }, /* state */ null, /* dueTime */ 60000, /* period */ Timeout.Infinite);
             }
             else
             {

@@ -22,6 +22,7 @@ namespace MahjongAI
         private SocketClient client = new SocketClient(server, port);
         private string username;
         private int roomNumber;
+        private bool gameStarted = false;
 
         public TenhouClient(Config config) : base(config)
         {
@@ -80,6 +81,16 @@ namespace MahjongAI
         public override void Join(GameType type)
         {
             client.Send(string.Format("<JOIN t=\"{0},{1}\" />", roomNumber, (int)type));
+            if (roomNumber == 0)
+            {
+                Timer timer = new Timer((state) => {
+                    if (!gameStarted)
+                    {
+                        InvokeOnUnknownEvent("Game matching timed out.");
+                        Close(true);
+                    }
+                }, /* state */ null, /* dueTime */ 60000, /* period */ Timeout.Infinite);
+            }
         }
 
         public override void EnterPrivateRoom(int roomNumber)
@@ -221,6 +232,7 @@ namespace MahjongAI
                 }
                 else if (reader.Name == "GO")
                 {
+                    gameStarted = true;
                     client.Send("<GOK />");
                 }
                 else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
