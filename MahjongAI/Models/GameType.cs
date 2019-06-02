@@ -14,6 +14,10 @@ namespace MahjongAI.Models
         Mode_Fast = 64,
         Level_High = 128,
         Level_VeryHigh = 32,
-        Level_Phoenix = 160
+        Level_Phoenix = 160,
+        Level_Silver = 128,
+        Level_Gold = 32,
+        Level_Jade = 160,
+        Level_Throne = 256,
     }
 }

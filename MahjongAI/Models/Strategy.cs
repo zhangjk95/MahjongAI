@@ -10,10 +10,10 @@ namespace MahjongAI.Models
     {
         public enum DefenceLevelType
         {
-            Default,
-            DefendReachedPlayers,
-            DefendReachedOya,
-            NoDefence,
+            Default = 3,
+            DefendReachedPlayers = 2,
+            DefendReachedOya = 1,
+            NoDefence = 0,
         }
 
         public DefenceLevelType DefenceLevel { get; set; } = DefenceLevelType.Default;

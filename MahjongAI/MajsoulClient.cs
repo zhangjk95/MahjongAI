@@ -101,15 +101,19 @@ namespace MahjongAI
                     typeNum += 1;
                 }
 
-                if (type.HasFlag(GameType.Level_Phoenix))
+                if (type.HasFlag(GameType.Level_Throne))
+                {
+                    typeNum += 12;
+                }
+                else if (type.HasFlag(GameType.Level_Jade))
                 {
                     typeNum += 9;
                 }
-                else if (type.HasFlag(GameType.Level_VeryHigh))
+                else if (type.HasFlag(GameType.Level_Gold))
                 {
                     typeNum += 6;
                 }
-                else if (type.HasFlag(GameType.Level_High))
+                else if (type.HasFlag(GameType.Level_Silver))
                 {
                     typeNum += 3;
                 }
@@ -796,6 +800,7 @@ namespace MahjongAI
 
         private void doRandomDelay()
         {
+            Console.WriteLine(stopwatch.Elapsed);
             if (stopwatch.Elapsed < TimeSpan.FromSeconds(2))
             {
                 Thread.Sleep(random.Next(1, 4) * 1000);

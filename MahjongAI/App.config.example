@@ -1,40 +1,100 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration>
-    <startup> 
-        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
-    </startup>
-    <appSettings>
-      
-      <!-- Available options: "Tenhou", "Majsoul" -->
-      <add key="Platform" value="Tenhou" />
+  <configSections>
+    <sectionGroup name="applicationSettings" type="System.Configuration.ApplicationSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="MahjongAI.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    </sectionGroup>
+  </configSections>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
+  </startup>
+  <appSettings>
 
-      <!-- Your ID on tenhou.net, or "NoName" which represents anonymous user, required if Platform == "Tenhou" -->
-      <add key="TenhouID" value="NoName" />
+    <!-- Platform. "Tenhou" or "Majsoul". -->
+    <add key="Platform" value="Majsoul" />
 
-      <!-- Your username on majsoul.union-game.com, required if Platform == "Majsoul" -->
-      <add key="MajsoulUsername" value="yourUsername" />
+    <!--
+        Your Tenhou ID, in the form of "IDXXXXXXXX-XXXXXXXX", or "NoName" for
+        playing as an anonymous user.
+        
+        Required if Platform == "Tenhou".
+      -->
+    <add key="TenhouID" value="NoName" />
 
-      <!-- Your password on majsoul.union-game.com, required if Platform == "Majsoul" -->
-      <add key="MajsoulPassword" value="yourPassword" />
+    <!--
+        Your Majsoul username. Third-party login is NOT supported.
+        
+        Required if Platform == "Majsoul". 
+      -->
+    <add key="MajsoulUsername" value="your-username" />
 
-      <!-- Private room number, or "0" which represents public lobby -->
-      <add key="PrivateRoom" value="0" />
+    <!--
+        Your Majsoul password.
+        
+        Required if Platform == "Majsoul".
+      -->
+    <add key="MajsoulPassword" value="your-password" />
 
-      <!-- Available options: "Normal", "High", "VeryHigh" or "Phoenix" -->
-      <add key="GameType_Level" value="Normal" />
+    <!-- Private room number, or "0" which represents the public lobby. -->
+    <add key="PrivateRoom" value="0" />
 
-      <!-- Available options: "Normal" (with red tiles) or "Fast" (with red tiles), avaliable if Platform == "Tenhou" -->
-      <add key="GameType_Mode" value="Normal" />
+    <!--
+        The level of the game.
+        
+        If Platform == "Tenhou", available options are:
+        - "Normal": 一般
+        - "High": 上級
+        - "VeryHigh": 特上
+        - "Phoenix": 鳳凰
+        
+        If Platform == "Majsoul", available options are:
+        - "Bronze": 铜之间 / 銅の間 / Bronze Room
+        - "Silver": 银之间 / 銀の間 / Silver Room
+        - "Gold": 金之间 / 金の間 / Gold Room
+        - "Jade": 玉之间 / 玉の間 / Jade Room
+        - "Throne": 王座之间 / 王座の間 / Throne Room
+      -->
+    <add key="GameType_Level" value="Normal" />
 
-      <!-- Available options: "East" or "EastSouth" -->
-      <add key="GameType_Match" value="EastSouth" />
+    <!--
+        The game mode. Available options:
+        - "Normal": 喰アリ赤
+        - "Fast": 喰アリ赤速
+        
+        Required if Platform == "Tenhou".
+      -->
+    <add key="GameType_Mode" value="Normal" />
 
-      <!-- The number of matches it will play, or "INF" to make it play forever -->
-      <!-- PS: You can input "q" and ENTER at any time while the program is running, then it will stop after the current match is over. -->
-      <add key="Repeat" value="INF" />
+    <!--
+        The match type. Available options:
+        - "East": 東風戦 / 四人东 / 四人東 / 4-Player East
+        - "EastSouth": 東南戦 / 四人南 / 四人南 / 4-Player South
+      -->
+    <add key="GameType_Match" value="East" />
 
-      <!-- Available options: "Default", "DefendReachedPlayers", "DefendReachedOya", "NoDefence" -->
-      <add key="Strategy_DefenceLevel" value="Default" />
-      
-    </appSettings>
+    <!--
+        The number of matches to play, or "INF" to make it play forever.
+        Note: You can type "q" and ENTER at any time while the program is
+        running. Then it will stop after the current match is over.
+      -->
+    <add key="Repeat" value="1" />
+
+    <!--
+        Defense strategy. Available options:
+        - "3": (most nonaggressive, recommended) A comprehensive defense
+          strategy.
+        - "2": May defend when at least one player has called riichi.
+        - "1": May defend when the dealer (oya) has called riichi.
+        - "0": (most aggressive) No defense.
+      -->
+    <add key="Strategy_DefenceLevel" value="3" />
+
+  </appSettings>
+  <applicationSettings>
+    <MahjongAI.Properties.Settings>
+      <setting name="DeviceUUID" serializeAs="String">
+        <value />
+      </setting>
+    </MahjongAI.Properties.Settings>
+  </applicationSettings>
 </configuration>
