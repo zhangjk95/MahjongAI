@@ -20,7 +20,7 @@ namespace MahjongAI
         private SocketClient client = new SocketClient(Constants.TENHOU_SERVER_HOST, Constants.TENHOU_SERVER_PORT);
         private string username;
         private int roomNumber;
-        private bool gameStarted = false;
+        private Dictionary<string, Timer> timers = new Dictionary<string, Timer>();
 
         public TenhouClient(Config config) : base(config)
         {
@@ -48,32 +48,12 @@ namespace MahjongAI
         public override void Login()
         {
             client.Send(string.Format("<HELO name=\"{0}\" tid=\"f0\" sx=\"M\" />", username));
-            string authStr = client.Receive();
-            if (authStr.StartsWith("<HELO "))
-            {
-                if (authStr.Contains("nintei"))
-                {
-                    Close(true);
-                }
-                else
-                {
-                    string authRes = getAuthRes(authStr);
-                    client.Send(authRes);
-                    InvokeOnLogin(resume: false, succeeded: true);
-                }
-            }
-            else if (authStr.StartsWith("<ERR "))
-            {
-                InvokeOnLogin(resume: false, succeeded: false);
-            }
-            else
-            {
-                HandleXML(authStr);
-            }
 
             new Task(StartRecv).Start();
             new Task(HeartBeat).Start();
             connected = true;
+
+            expectMessage("HELO", timeout: 5000, timeoutMessage: "Login timed out.");
         }
 
         public override void Join(GameType type)
@@ -81,13 +61,7 @@ namespace MahjongAI
             client.Send(string.Format("<JOIN t=\"{0},{1}\" />", roomNumber, (int)type));
             if (roomNumber == 0)
             {
-                Timer timer = new Timer((state) => {
-                    if (!gameStarted)
-                    {
-                        InvokeOnUnknownEvent("Game matching timed out.");
-                        Close(true);
-                    }
-                }, /* state */ null, /* dueTime */ 60000, /* period */ Timeout.Infinite);
+                expectMessage("GO", timeout: 60000, timeoutMessage: "Game matching timed out.");
             }
         }
 
@@ -215,6 +189,34 @@ namespace MahjongAI
         private void HandleXML(string str)
         {
             try {
+                string tagName = Regex.Match(str, @"<(\w+)\s+").Groups[1].Value;
+
+                if (timers.ContainsKey(tagName))
+                {
+                    timers[tagName].Dispose();
+                }
+
+                // XmlReader cannot parse login responses. They must be handled here.
+                if (tagName == "HELO")
+                {
+                    if (str.Contains("nintei"))
+                    {
+                        Close(true);
+                    }
+                    else
+                    {
+                        string authRes = getAuthRes(str);
+                        client.Send(authRes);
+                        InvokeOnLogin(resume: false, succeeded: true);
+                    }
+                    return;
+                }
+                else if (tagName == "ERR")
+                {
+                    InvokeOnLogin(resume: false, succeeded: false);
+                    return;
+                }
+
                 var readerSettings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
                 var reader = XmlReader.Create(new StringReader(str), readerSettings);
                 reader.Read();
@@ -230,7 +232,6 @@ namespace MahjongAI
                 }
                 else if (reader.Name == "GO")
                 {
-                    gameStarted = true;
                     client.Send("<GOK />");
                 }
                 else if (reader.Name == "AGARI" || reader.Name == "RYUUKYOKU")
@@ -568,6 +569,14 @@ namespace MahjongAI
             var authval = tmp[0] + "-" + (tt2[_loc4 * 2 + 0] ^ int.Parse(tmp[1].Substring(0, 4), System.Globalization.NumberStyles.HexNumber)).ToString("x4") + (tt2[_loc4 * 2 + 1] ^ int.Parse(tmp[1].Substring(4, 4), System.Globalization.NumberStyles.HexNumber)).ToString("x4");
 
             return string.Format("<AUTH val=\"{0}\"/>", authval);
+        }
+
+        private void expectMessage(string tagName, int timeout, string timeoutMessage)
+        {
+            timers[tagName] = new Timer((state) => {
+                InvokeOnUnknownEvent(timeoutMessage);
+                Close(true);
+            }, state: null, dueTime: timeout, period: Timeout.Infinite);
         }
 
         public void decodeMeld(int m, out int type, out int kui, out int hai0, out int hai1, out int hai2, out int hai3)

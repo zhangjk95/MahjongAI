@@ -42,6 +42,7 @@ namespace MahjongAI
         private bool gameStarted = false;
         private Stopwatch stopwatch = new Stopwatch();
         private Random random = new Random();
+        private Dictionary<string, Timer> timers = new Dictionary<string, Timer>();
 
         public MajsoulClient(Config config) : base(config)
         {
@@ -88,6 +89,8 @@ namespace MahjongAI
             }).Wait();
             new Task(HeartBeat).Start();
             connected = true;
+
+            expectMessage(".lq.Lobby.login", timeout: 5000, timeoutMessage: "Login timed out.");
         }
 
         public override void Join(GameType type)
@@ -120,13 +123,7 @@ namespace MahjongAI
 
                 Send(ws, ".lq.Lobby.matchGame", new { match_mode = typeNum }).Wait();
 
-                Timer timer = new Timer((state) => {
-                    if (!gameStarted)
-                    {
-                        InvokeOnUnknownEvent("Game matching timed out.");
-                        Close(true);
-                    }
-                }, /* state */ null, /* dueTime */ 60000, /* period */ Timeout.Infinite);
+                expectMessage(".lq.FastTest.authGame", timeout: 60000, timeoutMessage: "Game matching timed out.");
             }
             else
             {
@@ -288,6 +285,11 @@ namespace MahjongAI
             {
                 pendingActions.Enqueue(message);
                 return;
+            }
+
+            if (timers.ContainsKey(message.MethodName))
+            {
+                timers[message.MethodName].Dispose();
             }
 
             if (!message.Success && message.MethodName != ".lq.FastTest.authGame")
@@ -804,6 +806,14 @@ namespace MahjongAI
             {
                 Thread.Sleep(random.Next(1, 4) * 1000);
             }
+        }
+
+        private void expectMessage(string methodName, int timeout, string timeoutMessage)
+        {
+            timers[methodName] = new Timer((state) => {
+                InvokeOnUnknownEvent(timeoutMessage);
+                Close(true);
+            }, state: null, dueTime: timeout, period: Timeout.Infinite);
         }
     }
 }
