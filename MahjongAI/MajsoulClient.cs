@@ -18,8 +18,8 @@ namespace MahjongAI
 {
     class MajsoulClient : PlatformClient
     {
-        private const string serverListUrl = "https://lb-hk.majsoul.com:7891/api/v0/recommend_list?service=ws-gateway&protocol=ws&ssl=true";
-        private const string gameServerListUrlTemplate = "https://lb-hk.majsoul.com:7891/api/v0/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true&location={0}";
+        private const string serverListUrl = "/recommend_list?service=ws-gateway&protocol=ws&ssl=true";
+        private const string gameServerListUrlTemplate = "/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true&location={0}";
         private const string replaysFileName = "replays.txt";
 
         private WebSocket ws;
@@ -793,14 +793,13 @@ namespace MahjongAI
         private string getServerHost(string serverListUrl)
         {
             var webClient = new WebClient();
-            var serverListJson = webClient.DownloadString(serverListUrl);
+            var serverListJson = webClient.DownloadString(Constants.MAJSOUL_API_URL_PRIFIX[config.MajsoulRegion] + serverListUrl);
             var serverList = JObject.Parse(serverListJson)["servers"];
             return (string)serverList[0];
         }
 
         private void doRandomDelay()
         {
-            Console.WriteLine(stopwatch.Elapsed);
             if (stopwatch.Elapsed < TimeSpan.FromSeconds(2))
             {
                 Thread.Sleep(random.Next(1, 4) * 1000);

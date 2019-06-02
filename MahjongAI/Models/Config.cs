@@ -10,6 +10,7 @@ namespace MahjongAI.Models
     {
         public Platform Platform { get; set; }
         public string TenhouID { get; set; }
+        public MajsoulRegion MajsoulRegion { get; set; }
         public string MajsoulUsername { get; set; }
         public string MajsoulPassword { get; set; }
         public int PrivateRoom { get; set; }

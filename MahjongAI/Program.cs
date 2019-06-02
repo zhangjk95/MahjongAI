@@ -102,9 +102,15 @@ namespace MahjongAI
             var strategy_DefenceLevel = ConfigurationManager.AppSettings["Strategy_DefenceLevel"];
             if (strategy_DefenceLevel != null)
             {
-                config.strategy.DefenceLevel = (Strategy.DefenceLevelType)Enum.Parse(typeof(Strategy.DefenceLevelType), strategy_DefenceLevel);
+                if (int.TryParse(strategy_DefenceLevel, out int intDefenceLevel))
+                {
+                    config.strategy.DefenceLevel = (Strategy.DefenceLevelType)intDefenceLevel;
+                } else
+                {
+                    Console.WriteLine("Warning: Value \"{0}\" of Strategy_DefenceLevel is deprecated. Please use \"0\", \"1\", \"2\", or \"3\" instead.", strategy_DefenceLevel);
+                    config.strategy.DefenceLevel = (Strategy.DefenceLevelType)Enum.Parse(typeof(Strategy.DefenceLevelType), strategy_DefenceLevel);
+                }
             }
-
             if (config.Platform == Platform.Tenhou)
             {
                 config.TenhouID = ConfigurationManager.AppSettings["TenhouID"];
@@ -115,6 +121,7 @@ namespace MahjongAI
             }
             else if (config.Platform == Platform.Majsoul)
             {
+                config.MajsoulRegion = (MajsoulRegion)Enum.Parse(typeof(MajsoulRegion), ConfigurationManager.AppSettings["MajsoulRegion"], ignoreCase: true);
                 config.MajsoulUsername = ConfigurationManager.AppSettings["MajsoulUsername"];
                 config.MajsoulPassword = ConfigurationManager.AppSettings["MajsoulPassword"];
             }

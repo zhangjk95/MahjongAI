@@ -22,6 +22,18 @@
     <add key="TenhouID" value="NoName" />
 
     <!--
+        The version and the route you would like to use.
+        - "cn_domestic": Chinese version with domestic route
+        - "cn_international": Chinese version with international route
+        
+        Japanese and English versions are NOT supported. They will be supported
+        in the future.
+        
+        Required if Platform == "Majsoul".
+      -->
+    <add key="MajsoulRegion" value="cn_international" />
+
+    <!--
         Your Majsoul username. Third-party login is NOT supported.
         
         Required if Platform == "Majsoul". 

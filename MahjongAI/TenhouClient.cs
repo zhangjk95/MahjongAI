@@ -15,11 +15,9 @@ namespace MahjongAI
 {
     class TenhouClient : PlatformClient
     {
-        private const string server = "133.242.10.78";
-        private const int port = 10080;
         private const string replaysFileName = "replays.txt";
 
-        private SocketClient client = new SocketClient(server, port);
+        private SocketClient client = new SocketClient(Constants.TENHOU_SERVER_HOST, Constants.TENHOU_SERVER_PORT);
         private string username;
         private int roomNumber;
         private bool gameStarted = false;

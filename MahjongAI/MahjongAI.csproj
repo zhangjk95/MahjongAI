@@ -51,6 +51,7 @@
     <Compile Include="AIController.cs" />
     <Compile Include="AIControllerDef.cs" />
     <Compile Include="AIControllerHelper.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="MajsoulHelper.cs" />
     <Compile Include="MajsoulClient.cs" />
     <Compile Include="Models\Config.cs" />
@@ -59,6 +60,7 @@
     <Compile Include="Models\DefEvalResult.cs" />
     <Compile Include="Models\Direction.cs" />
     <Compile Include="Models\EvalResult.cs" />
+    <Compile Include="Models\MajsoulRegion.cs" />
     <Compile Include="Models\Platform.cs" />
     <Compile Include="Models\SafeTiles.cs" />
     <Compile Include="Models\Strategy.cs" />
@@ -87,7 +89,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config.example" />
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
