@@ -86,6 +86,7 @@
     <Compile Include="SocketClient.cs" />
     <Compile Include="TenhouClient.cs" />
     <Compile Include="Test.cs" />
+    <Compile Include="Util\Syanten.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config.example" />

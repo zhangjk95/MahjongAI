@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 
 using MahjongAI.Models;
+using MahjongAI.Util;
 
 namespace MahjongAI
 {
@@ -16,10 +17,9 @@ namespace MahjongAI
         private static List<string> workingDirectories = new List<string> { ".", "../../../MahjongLib" };
         private static List<string> resourceFiles = new List<string> { "syanten.dat" };
 
-        private static List<MahjongHelper> instances = null;
-        private static int currentInstanceIndex = 0;
-        private static object indexLock = new object();
+        private static MahjongHelper instance = null;
         private Process process;
+        private Syanten syanten;
 
         public MahjongHelper()
         {
@@ -37,6 +37,7 @@ namespace MahjongAI
             try
             {
                 workingDirectory = Path.GetFullPath(workingDirectories.First(dir => resourceFiles.All(file => File.Exists(Path.Combine(dir, file)))));
+                syanten = new Syanten(Path.Combine(workingDirectory, "syanten.dat"));
             }
             catch (Exception)
             {
@@ -72,44 +73,27 @@ namespace MahjongAI
 
         public static MahjongHelper getInstance()
         {
-            lock (indexLock)
+            if (instance == null)
             {
-                if (instances == null)
-                {
-                    instances = new List<MahjongHelper>() {
-                        new MahjongHelper(),
-                        new MahjongHelper(),
-                        new MahjongHelper(),
-                        new MahjongHelper()
-                    };
-                }
-
-                currentInstanceIndex = currentInstanceIndex == 3 ? 0 : currentInstanceIndex + 1;
+                instance = new MahjongHelper();
             }
-            
-            return instances[currentInstanceIndex];
+
+            return instance;
         }
 
         public int calcDistance(Hand hand, int fuuroCount, out int normalDistance)
         {
-            lock (process)
+            int[] handTmp = new int[38];
+            foreach (var tile in hand)
             {
-                send("syanten");
-
-                int[] handTmp = new int[38];
-                foreach (var tile in hand)
-                {
-                    handTmp[tile.GeneralId]++;
-                }
-                send(string.Join(" ", handTmp));
-
-                send(fuuroCount);
-
-                var output = process.StandardOutput.ReadLine().Split();
-                var res = int.Parse(output[0]);
-                normalDistance = int.Parse(output[1]);
-                return res;
+                handTmp[tile.GeneralId]++;
             }
+            syanten.set_tehai(handTmp);
+
+            syanten.set_fuurosuu(fuuroCount);
+
+            var res = syanten.AnySyanten(out normalDistance);
+            return res;
         }
 
         public int calcPoint(Hand hand, Tile lastTile, Direction gameDirection, Direction playerDirection, Fuuro fuuro, Dora dora, bool isRiichi, bool tsumoAgari, bool isLastTile)
