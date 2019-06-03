@@ -34,9 +34,13 @@ After 196 matches:
 
 		git clone https://github.com/zhangjk95/MahjongAI.git
 
-2. If you are going to play on Majsoul, navigate to `MajsoulHelper` directory and run
+2. Change the working directory to the source code folder.
 
-		npm install
+		cd MahjongAI
+
+2. If you are going to play on Majsoul, run
+
+		npm install --prefix ./MajsoulHelper ./MajsoulHelper
 
 2. Copy `MahjongAI\App.config.example` to `MahjongAI\App.config` and edit it. (Instructions are included in the example.)
 3. Open the solution with Visual Studio.
@@ -59,10 +63,14 @@ You can run this program in Docker on either Windows or Linux without ANY requir
 
 		cd MahjongAI
 
+2. If you are going to play on Majsoul, run
+
+		npm install --prefix ./MajsoulHelper ./MajsoulHelper
+
 3. Copy `MahjongAI/App.config.example` to `MahjongAI/App.config` and edit it. (Instructions are included in the example.)
 
 		cp MahjongAI/App.config.example MahjongAI/App.config
-		vim MahjongAI/App.config
+		$EDITOR MahjongAI/App.config
 
 4. Build Docker image.
 
