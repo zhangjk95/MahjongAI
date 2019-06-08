@@ -24,7 +24,7 @@ namespace MahjongAI
                     || gameData.players.Any(p => defLevel(p) >= 2) && shouldDef2(evalResult, discardTile)
                     || gameData.players.Any(p => defLevel(p) >= 1) && shouldDef1(evalResult, discardTile))
                 && !isAllLastBottom() // 不是All last四位
-                && !(player.point > gameData.getPlayerByRanking(3).point - 10000 && (gameData.direction == Direction.S || player.direction == Direction.E)); // 南场或亲家的时候比三位低了10000点以上就不防守
+                && !(player.point <= gameData.getPlayerByRanking(3).point - 10000 && (gameData.direction == Direction.S || player.direction == Direction.E)); // 南场或亲家的时候比三位低了10000点以上就不防守
         }
 
         private bool shouldDef4(EvalResult evalResult, Tile discardTile = null)

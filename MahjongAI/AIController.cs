@@ -564,7 +564,7 @@ namespace MahjongAI
                 {
                     return res;
                 }
-                else if (x.Distance <= 2 && (res = y.Furiten.CompareTo(x.Furiten)) != 0) // 是否振听
+                else if (x.Distance <= 1 && (res = y.Furiten.CompareTo(x.Furiten)) != 0) // 是否振听
                 {
                     return res;
                 }
