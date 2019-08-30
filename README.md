@@ -25,7 +25,7 @@ After 196 matches:
 
 #### Requirements
 
-- Visual Studio 2015 or later
+- Visual Studio **2017** or later
 - Node.js v8.11.2 or later (required only if you are going to play on Majsoul)
 
 #### Steps
