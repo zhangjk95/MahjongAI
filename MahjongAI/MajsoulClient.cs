@@ -287,7 +287,7 @@ namespace MahjongAI
                 return;
             }
 
-            if (timers.ContainsKey(message.MethodName))
+            if (message.MethodName != null && timers.ContainsKey(message.MethodName))
             {
                 timers[message.MethodName].Dispose();
             }
