@@ -136,12 +136,12 @@ namespace MahjongAI
                 MahjongHelper.getInstance();
                 if (config.Platform == Platform.Majsoul)
                 {
-                    new MajsoulHelper();
+                    new MajsoulHelper().selfCheck();
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(ex);
                 Console.ReadKey();
                 Environment.Exit(2);
             }
