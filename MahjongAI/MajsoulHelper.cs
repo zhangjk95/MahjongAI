@@ -154,6 +154,24 @@ namespace MahjongAI
             return res;
         }
 
+        public void selfCheck()
+        {
+            lock (process)
+            {
+                send(JsonConvert.SerializeObject(new
+                {
+                    action = "encode",
+                    methodName = ".lq.Lobby.heatbeat",
+                    data = new { },
+                }));
+                var testOutput = recv();
+                if (testOutput == null)
+                {
+                    throw new Exception(process.StandardError.ReadToEnd());
+                }
+            }
+        }
+
         private void send(string str)
         {
             lock (process)
