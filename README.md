@@ -2,10 +2,12 @@
 
 A Japanese Mahjong AI, which can play Mahjong on two online Japanese Mahjong services. It can easily defeat other players in 一般 (Normal level) games and also plays well in 上級 (High level) games.
 
-## Supported platforms
+## Supported platform
 
 - Tenhou ([http://tenhou.net](http://tenhou.net))
-- Majsoul ([https://majsoul.union-game.com](https://majsoul.union-game.com))
+
+> We will no longer support Majsoul starting from 0.6.64.w due to abuse of this project.
+
 
 ## Results
 
