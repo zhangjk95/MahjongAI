@@ -109,7 +109,7 @@ namespace MahjongAI
                 }
                 send(string.Join(" ", handTmp));
 
-                send(getTileId(lastTile));
+                send(lastTile.GeneralId);
                 send((int)gameDirection + 30);
                 send((int)playerDirection + 30);
 
