@@ -10,14 +10,17 @@
   </startup>
   <appSettings>
 
-    <!-- Platform. "Tenhou" or "Majsoul". -->
-    <add key="Platform" value="Majsoul" />
+    <!-- 
+        Platform. Only "Tenhou" is supported.
+        
+        We no longer support Majsoul starting from 0.6.64.w due to abuse of
+        this project.
+      -->
+    <add key="Platform" value="Tenhou" />
 
     <!--
         Your Tenhou ID, in the form of "IDXXXXXXXX-XXXXXXXX", or "NoName" for
         playing as an anonymous user.
-        
-        Required if Platform == "Tenhou".
       -->
     <add key="TenhouID" value="NoName" />
 
@@ -29,21 +32,21 @@
         Japanese and English versions are NOT supported. They will be supported
         in the future.
         
-        Required if Platform == "Majsoul".
+        Deprecated.
       -->
     <add key="MajsoulRegion" value="cn_international" />
 
     <!--
         Your Majsoul username. Third-party login is NOT supported.
         
-        Required if Platform == "Majsoul". 
+        Deprecated. 
       -->
     <add key="MajsoulUsername" value="your-username" />
 
     <!--
         Your Majsoul password.
         
-        Required if Platform == "Majsoul".
+        Deprecated.
       -->
     <add key="MajsoulPassword" value="your-password" />
 
@@ -53,18 +56,11 @@
     <!--
         The level of the game.
         
-        If Platform == "Tenhou", available options are:
+        Available options are:
         - "Normal": 一般
         - "High": 上級
         - "VeryHigh": 特上
         - "Phoenix": 鳳凰
-        
-        If Platform == "Majsoul", available options are:
-        - "Bronze": 铜之间 / 銅の間 / Bronze Room
-        - "Silver": 银之间 / 銀の間 / Silver Room
-        - "Gold": 金之间 / 金の間 / Gold Room
-        - "Jade": 玉之间 / 玉の間 / Jade Room
-        - "Throne": 王座之间 / 王座の間 / Throne Room
       -->
     <add key="GameType_Level" value="Normal" />
 
@@ -72,15 +68,13 @@
         The game mode. Available options:
         - "Normal": 喰アリ赤
         - "Fast": 喰アリ赤速
-        
-        Required if Platform == "Tenhou".
       -->
     <add key="GameType_Mode" value="Normal" />
 
     <!--
         The match type. Available options:
-        - "East": 東風戦 / 四人东 / 四人東 / 4-Player East
-        - "EastSouth": 東南戦 / 四人南 / 四人南 / 4-Player South
+        - "East": 東風戦
+        - "EastSouth": 東南戦
       -->
     <add key="GameType_Match" value="East" />
 

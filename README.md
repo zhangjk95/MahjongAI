@@ -6,8 +6,9 @@ A Japanese Mahjong AI, which can play Mahjong on two online Japanese Mahjong ser
 
 - Tenhou ([http://tenhou.net](http://tenhou.net))
 
-> We will no longer support Majsoul starting from 0.6.64.w due to abuse of this project.
-
+```diff
+- IMPORTANT: We no longer support Majsoul starting from 0.6.64.w due to abuse of this project.
+```
 
 ## Results
 
