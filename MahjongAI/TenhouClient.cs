@@ -53,7 +53,7 @@ namespace MahjongAI
             new Task(HeartBeat).Start();
             connected = true;
 
-            expectMessage("HELO", timeout: 5000, timeoutMessage: "Login timed out.");
+            expectMessage(new[] { "HELO", "GO" }, timeout: 5000, timeoutMessage: "Login timed out.");
         }
 
         public override void Join(GameType type)
@@ -571,12 +571,21 @@ namespace MahjongAI
             return string.Format("<AUTH val=\"{0}\"/>", authval);
         }
 
-        private void expectMessage(string tagName, int timeout, string timeoutMessage)
+        private void expectMessage(string[] tagNames, int timeout, string timeoutMessage)
         {
-            timers[tagName] = new Timer((state) => {
+            var timer = new Timer((state) => {
                 InvokeOnUnknownEvent(timeoutMessage);
                 Close(true);
             }, state: null, dueTime: timeout, period: Timeout.Infinite);
+            foreach (var tagName in tagNames)
+            {
+                timers[tagName] = timer;
+            }
+        }
+
+        private void expectMessage(string tagName, int timeout, string timeoutMessage)
+        {
+            expectMessage(new[] { tagName }, timeout, timeoutMessage);
         }
 
         public void decodeMeld(int m, out int type, out int kui, out int hai0, out int hai1, out int hai2, out int hai3)
