@@ -189,44 +189,47 @@ namespace MahjongAI
         private void HandleXML(string str)
         {
             try {
-                string tagName = Regex.Match(str, @"<(\w+)\s+").Groups[1].Value;
-
-                if (timers.ContainsKey(tagName))
-                {
-                    timers[tagName].Dispose();
-                }
-
-                // XmlReader cannot parse login responses. They must be handled here.
-                if (tagName == "HELO")
-                {
-                    if (str.Contains("nintei"))
-                    {
-                        Close(true);
-                    }
-                    else
-                    {
-                        string authRes = getAuthRes(str);
-                        client.Send(authRes);
-                        InvokeOnLogin(resume: false, succeeded: true);
-                    }
-                    return;
-                }
-                else if (tagName == "ERR")
-                {
-                    InvokeOnLogin(resume: false, succeeded: false);
-                    return;
-                }
-
+                // "&" is a special character that cannot be parsed by XmlReader.
+                str = str.Replace("&", "&amp;");
                 var readerSettings = new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment };
                 var reader = XmlReader.Create(new StringReader(str), readerSettings);
                 reader.Read();
+                Match match;
+
                 if (reader.NodeType != XmlNodeType.Element)
                 {
                     return;
                 }
 
-                Match match;
-                if (reader.Name == "REJOIN")
+                if (timers.ContainsKey(reader.Name))
+                {
+                    timers[reader.Name].Dispose();
+                }
+
+                if (reader.Name == "HELO")
+                {
+                    if (reader["nintei"] != null)
+                    {
+                        Close(true);
+                    }
+                    else
+                    {
+                        string auth = reader["auth"];
+                        if (auth != null)
+                        {
+                            string authRes = getAuthRes(auth);
+                            client.Send(authRes);
+                        }
+                        InvokeOnLogin(resume: false, succeeded: true);
+                    }
+                    return;
+                }
+                else if (reader.Name == "ERR")
+                {
+                    InvokeOnLogin(resume: false, succeeded: false);
+                    return;
+                }
+                else if (reader.Name == "REJOIN")
                 {
                     client.Send(str.Replace("REJOIN", "JOIN"));
                 }
@@ -347,6 +350,10 @@ namespace MahjongAI
             catch (SocketException)
             {
                 Close(true);
+            }
+            catch (Exception e)
+            {
+                InvokeOnUnknownEvent(e.ToString());
             }
         }
 
@@ -557,12 +564,10 @@ namespace MahjongAI
             writer.Close();
         }
 
-        private string getAuthRes(string authStr) 
+        private string getAuthRes(string auth) 
         {
             int[] tt2 = new int[] {63006,9570,49216,45888,9822,23121,59830,51114,54831,4189,580,5203,42174,59972,55457,59009,59347,64456,8673,52710,49975,2006,62677,3463,17754,5357};
 
-            Regex regex = new Regex("auth=\"(.*?)\"");
-            string auth = regex.Match(authStr).Groups[1].Value;
             string[] tmp = auth.Split('-');
 
             var _loc4 = int.Parse("2" + tmp[0].Substring(2, 6)) % (13 - int.Parse(tmp[0].Substring(7, 1)) - 1);
