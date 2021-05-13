@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +21,20 @@ namespace MahjongAI.Models
             get
             {
                 return this.Where(group => group.type != FuuroType.ankan).Count();
+            }
+        }
+        public int AnkanCount
+        {
+            get
+            {
+                return this.Where(group => group.type == FuuroType.ankan).Count();
+            }
+        }
+        public int MinkanCount
+        {
+            get
+            {
+                return this.Where(group => (group.type == FuuroType.minkan) || (group.type == FuuroType.kakan)).Count();
             }
         }
     }
