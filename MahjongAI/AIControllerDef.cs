@@ -80,11 +80,11 @@ namespace MahjongAI
             {
                 return 4;
             }
-            else if (forPlayer.fuuro.Tiles.Sum(t => doraValue(t)) >= 3 && forPlayer.fuuro.VisibleCount * 3 + forPlayer.graveyard.Count >= 15)
+            else if (forPlayer.fuuro.Tiles.Sum(t => doraValue(t)) >= 3 && forPlayer.fuuro.VisibleCount * 3 + forPlayer.fuuro.MinkanCount + forPlayer.fuuro.AnkanCount * 4 + forPlayer.graveyard.Count >= 15) //牌河枚树+副露宝牌数+副露数判断防御
             {
                 return 4;
             }
-            else if (forPlayer.fuuro.VisibleCount > 0 && forPlayer.fuuro.VisibleCount * 3 + forPlayer.graveyard.Count >= 15)
+            else if (forPlayer.fuuro.VisibleCount > 0 && forPlayer.fuuro.VisibleCount * 3 + forPlayer.fuuro.MinkanCount + forPlayer.fuuro.AnkanCount * 4 + forPlayer.graveyard.Count >= 15)
             {
                 return 2;
             }
