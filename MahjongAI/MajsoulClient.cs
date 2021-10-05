@@ -8,11 +8,12 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 using System.Net;
+using System.Net.WebSockets;
 
 using Newtonsoft.Json.Linq;
-using WebSocketSharp;
 
 using MahjongAI.Models;
+using MahjongAI.Util;
 
 namespace MahjongAI
 {
@@ -22,12 +23,12 @@ namespace MahjongAI
         private const string gameServerListUrlTemplate = "/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true&location={0}";
         private const string replaysFileName = "replays.txt";
 
-        private WebSocket ws;
-        private WebSocket wsGame;
+        private ClientWebSocket ws;
+        private ClientWebSocket wsGame;
+        private WebSocketUtils wsUtils = new WebSocketUtils();
         private string username;
         private string password;
         private MajsoulHelper majsoulHelper = new MajsoulHelper();
-        private byte[] buffer = new byte[1048576];
         private IEnumerable<JToken> operationList;
         private bool nextReach = false;
         private bool gameEnded = false;
@@ -47,8 +48,13 @@ namespace MahjongAI
         public MajsoulClient(Config config) : base(config)
         {
             var host = getServerHost(serverListUrl);
-            ws = new WebSocket("wss://" + host, onMessage: OnMessage, onError: OnError);
-            ws.Connect().Wait();
+            var url = "wss://" + host;
+            if (url.EndsWith(":443"))
+            {
+                url += "/gateway";
+            }
+            ws = wsUtils.Connect(url);
+            wsUtils.StartRecv(ws, OnMessage, OnError);
             username = config.MajsoulUsername;
             password = config.MajsoulPassword;
         }
@@ -67,8 +73,8 @@ namespace MahjongAI
                     InvokeOnClose();
                     try
                     {
-                        ws.Close().Wait();
-                        wsGame.Close().Wait();
+                        wsUtils.Close(ws).Wait();
+                        wsUtils.Close(wsGame).Wait();
                     } catch { }
                 }
             }
@@ -78,14 +84,28 @@ namespace MahjongAI
         {
             Send(ws, ".lq.Lobby.login", new
             {
-                currency_platforms = new[] { 2 },
+                currency_platforms = new[] { 2, 6, 8, 10, 11 },
                 account = username,
                 password = EncodePassword(password),
                 reconnect = false,
-                device = new { device_type = "pc", browser = "safari" },
                 random_key = GetDeviceUUID(),
-                client_version = "0.4.149.w",
+                client_version = new
+                {
+                    resource = "0.9.302.w",
+                },
+                client_version_string = "web-0.9.302",
                 gen_access_token = false,
+                type = 0,
+                device = new
+                {
+                    hardware = "pc",
+                    is_browser = true,
+                    os = "windows",
+                    os_version = "win10",
+                    platform = "pc",
+                    sale_platform = "web",
+                    software = "Chrome",
+                },
             }).Wait();
             new Task(HeartBeat).Start();
             connected = true;
@@ -135,7 +155,7 @@ namespace MahjongAI
         {
             if (roomNumber != 0)
             {
-                Send(ws, ".lq.Lobby.joinRoom", new { room_id = roomNumber }).Wait();
+                Send(ws, ".lq.Lobby.joinRoom", new { room_id = roomNumber, client_version_string = "web-0.9.302" }).Wait();
                 inPrivateRoom = true;
             }
             else
@@ -151,7 +171,7 @@ namespace MahjongAI
 
         public override void Bye()
         {
-            wsGame.Close();
+            wsUtils.Close(ws).Wait();
             wsGame = null;
         }
 
@@ -255,8 +275,14 @@ namespace MahjongAI
                 InvokeOnUnknownEvent("Game found. Connecting...");
                 while (!gameStarted)
                 {
-                    wsGame = new WebSocket("wss://" + getServerHost(string.Format(gameServerListUrlTemplate, data["location"])), onMessage: OnMessage, onError: OnError);
-                    wsGame.Connect().Wait();
+                    var host = getServerHost(string.Format(gameServerListUrlTemplate, data["location"]));
+                    var url = "wss://" + host;
+                    if (url.EndsWith(":443"))
+                    {
+                        url += "/game-gateway";
+                    }
+                    wsGame = wsUtils.Connect(url);
+                    wsUtils.StartRecv(wsGame, OnMessage, OnError);
                     Send(wsGame, ".lq.FastTest.authGame", new
                     {
                         account_id = accountId,
@@ -587,7 +613,14 @@ namespace MahjongAI
             gameData.remainingTile = GameData.initialRemainingTile;
 
             gameData.dora.Clear();
-            gameData.dora.Add(new Tile((string)data["dora"]));
+            if (data["doras"] != null)
+            {
+                var doras = data["doras"].Select(t => (string)t);
+                foreach (var dora in doras)
+                {
+                    gameData.dora.Add(new Tile(dora));
+                }
+            }
 
             for (int i = 0; i < 4; i++)
             {
@@ -734,11 +767,10 @@ namespace MahjongAI
             writer.Close();
         }
 
-        private async Task OnMessage(MessageEventArgs args)
+        private void OnMessage(byte[] buffer, int length)
         {
             try
             {
-                int length = await args.Data.ReadAsync(buffer, 0, buffer.Length);
                 MajsoulMessage message = majsoulHelper.decode(buffer, 0, length);
                 HandleMessage(message);
             } catch (Exception ex)
@@ -748,9 +780,10 @@ namespace MahjongAI
             }
         }
 
-        private Task OnError(WebSocketSharp.ErrorEventArgs args)
+        private void OnError(Exception ex)
         {
-            return Task.Factory.StartNew(() => Close(true));
+            InvokeOnUnknownEvent(ex.Message);
+            Close(true);
         }
 
         private static string EncodePassword(string password)
@@ -761,7 +794,7 @@ namespace MahjongAI
             }
         }
 
-        public async Task Send(WebSocket ws, string methodName, object data)
+        private async Task Send(ClientWebSocket ws, string methodName, object data)
         {
             byte[] buffer = majsoulHelper.encode(new MajsoulMessage
             {
@@ -771,7 +804,7 @@ namespace MahjongAI
             });
             try
             {
-                await ws.Send(buffer);
+                await wsUtils.Send(ws, buffer);
             }
             catch (Exception ex)
             {

@@ -43,9 +43,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="websocket-sharp.clone, Version=1.0.2.39869, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\websocket-sharp.clone.3.0.0\lib\net45\websocket-sharp.clone.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AIController.cs" />
@@ -87,6 +84,7 @@
     <Compile Include="TenhouClient.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\Syanten.cs" />
+    <Compile Include="Util\WebSocketUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config.example" />

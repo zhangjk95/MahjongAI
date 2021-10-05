@@ -8,7 +8,10 @@ namespace MahjongAI.Models
 {
     enum MajsoulRegion
     {
-        CN_DOMESTIC,
-        CN_INTERNATIONAL,
+        CN_INTERNATIONAL_1,
+        CN_INTERNATIONAL_2,
+        CN_INTERNATIONAL_3,
+        CN_INTERNATIONAL_4,
+        CN_INTERNATIONAL_5,
     }
 }

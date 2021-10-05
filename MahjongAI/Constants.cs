@@ -11,8 +11,11 @@ namespace MahjongAI
     {
         public static readonly IReadOnlyDictionary<MajsoulRegion, string> MAJSOUL_API_URL_PRIFIX = new Dictionary<MajsoulRegion, string>()
         {
-            { MajsoulRegion.CN_DOMESTIC, "https://lb-mainland.majsoul.com:2901/api/v0" },
-            { MajsoulRegion.CN_INTERNATIONAL, "https://lb-hk.majsoul.com:7891/api/v0" },
+            { MajsoulRegion.CN_INTERNATIONAL_1, "https://lb-hw.maj-soul.com/api/v0" },
+            { MajsoulRegion.CN_INTERNATIONAL_2, "https://lb-v2.maj-soul.com:4443/api/v0" },
+            { MajsoulRegion.CN_INTERNATIONAL_3, "https://lb-cdn.maj-soul.com/api/v0" },
+            { MajsoulRegion.CN_INTERNATIONAL_4, "https://lb-hw.maj-soul.com/api/v0" },
+            { MajsoulRegion.CN_INTERNATIONAL_5, "https://lb-sy.maj-soul.com/api/v0" },
         };
 
         public const string TENHOU_SERVER_HOST = "133.242.10.78";

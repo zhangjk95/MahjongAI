@@ -11,10 +11,12 @@
   <appSettings>
 
     <!-- 
-        Platform. Only "Tenhou" is supported.
+        Platform. "Tenhou" or "Majsoul".
         
-        We no longer support Majsoul starting from 0.6.64.w due to abuse of
-        this project.
+        NOTE: If you choose "Majsoul", you must join a private room by setting
+        a value for "PrivateRoom" below.
+        We no longer support Majsoul public lobby starting from 0.6.64.w due to
+        abuse of this project.
       -->
     <add key="Platform" value="Tenhou" />
 
@@ -26,27 +28,23 @@
 
     <!--
         The version and the route you would like to use.
-        - "cn_domestic": Chinese version with domestic route
-        - "cn_international": Chinese version with international route
+        - "cn_international_1": Chinese international version (route #1)
+        - "cn_international_2": Chinese international version (route #2)
+        - "cn_international_3": Chinese international version (route #3)
+        - "cn_international_4": Chinese international version (route #4)
+        - "cn_international_5": Chinese international version (route #5)
         
-        Japanese and English versions are NOT supported. They will be supported
-        in the future.
-        
-        Deprecated.
+        Japanese and English versions are NOT supported.
       -->
-    <add key="MajsoulRegion" value="cn_international" />
+    <add key="MajsoulRegion" value="cn_international_2" />
 
     <!--
         Your Majsoul username. Third-party login is NOT supported.
-        
-        Deprecated. 
       -->
     <add key="MajsoulUsername" value="your-username" />
 
     <!--
         Your Majsoul password.
-        
-        Deprecated.
       -->
     <add key="MajsoulPassword" value="your-password" />
 
