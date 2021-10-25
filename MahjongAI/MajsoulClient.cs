@@ -23,8 +23,8 @@ namespace MahjongAI
         private const string gameServerListUrlTemplate = "/recommend_list?service=ws-game-gateway&protocol=ws&ssl=true&location={0}";
         private const string replaysFileName = "replays.txt";
 
-        private ClientWebSocket ws;
-        private ClientWebSocket wsGame;
+        private WebSocketNode wsNode;
+        private WebSocketNode wsGameNode;
         private WebSocketUtils wsUtils = new WebSocketUtils();
         private string username;
         private string password;
@@ -53,15 +53,15 @@ namespace MahjongAI
             {
                 url += "/gateway";
             }
-            ws = wsUtils.Connect(url);
-            wsUtils.StartRecv(ws, OnMessage, OnError);
+            wsNode = new WebSocketNode(url);
+            wsUtils.StartRecv(wsNode.clientSocket, OnMessage, OnError);
             username = config.MajsoulUsername;
             password = config.MajsoulPassword;
         }
 
         public override void Close(bool unexpected = false)
         {
-            lock (ws)
+            lock (wsNode)
             {
                 if (connected)
                 {
@@ -73,8 +73,8 @@ namespace MahjongAI
                     InvokeOnClose();
                     try
                     {
-                        wsUtils.Close(ws).Wait();
-                        wsUtils.Close(wsGame).Wait();
+                        wsNode.Close();
+                        wsGameNode.Close();
                     } catch { }
                 }
             }
@@ -82,7 +82,7 @@ namespace MahjongAI
 
         public override void Login()
         {
-            Send(ws, ".lq.Lobby.login", new
+            Send(wsNode, ".lq.Lobby.login", new
             {
                 currency_platforms = new[] { 2, 6, 8, 10, 11 },
                 account = username,
@@ -141,13 +141,13 @@ namespace MahjongAI
                     typeNum += 3;
                 }
 
-                Send(ws, ".lq.Lobby.matchGame", new { match_mode = typeNum }).Wait();
+                Send(wsNode, ".lq.Lobby.matchGame", new { match_mode = typeNum }).Wait();
 
                 expectMessage(".lq.FastTest.authGame", timeout: 60000, timeoutMessage: "Game matching timed out.");
             }
             else
             {
-                Send(ws, ".lq.Lobby.readyPlay", new { ready = true }).Wait();
+                Send(wsNode, ".lq.Lobby.readyPlay", new { ready = true }).Wait();
             }
         }
 
@@ -155,7 +155,7 @@ namespace MahjongAI
         {
             if (roomNumber != 0)
             {
-                Send(ws, ".lq.Lobby.joinRoom", new { room_id = roomNumber, client_version_string = "web-0.9.302" }).Wait();
+                Send(wsNode, ".lq.Lobby.joinRoom", new { room_id = roomNumber, client_version_string = "web-0.9.302" }).Wait();
                 inPrivateRoom = true;
             }
             else
@@ -166,25 +166,25 @@ namespace MahjongAI
 
         public override void NextReady()
         {
-            Send(wsGame, ".lq.FastTest.confirmNewRound", new { }).Wait();
+            Send(wsGameNode, ".lq.FastTest.confirmNewRound", new { }).Wait();
         }
 
         public override void Bye()
         {
-            wsUtils.Close(ws).Wait();
-            wsGame = null;
+            wsNode.Close();
+            wsGameNode = null;
         }
 
         public override void Pass()
         {
             doRandomDelay();
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { cancel_operation = true, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { cancel_operation = true, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Discard(Tile tile)
         {
             doRandomDelay();
-            Send(wsGame, ".lq.FastTest.inputOperation", new { type = nextReach ? 7 : 1, tile = tile.OfficialName, moqie = gameData.lastTile == tile, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputOperation", new { type = nextReach ? 7 : 1, tile = tile.OfficialName, moqie = gameData.lastTile == tile, timeuse = stopwatch.Elapsed.Seconds }).Wait();
             nextReach = false;
             lastDiscardedTile = tile;
         }
@@ -194,13 +194,13 @@ namespace MahjongAI
             doRandomDelay();
             var combination = operationList.First(item => (int)item["type"] == 3)["combination"].Select(t => (string)t);
             int index = combination.ToList().FindIndex(comb => comb.Contains(tile0.GeneralName));
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 3, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 3, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Minkan()
         {
             doRandomDelay();
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 5, index = 0, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 5, index = 0, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Chii(Tile tile0, Tile tile1)
@@ -208,7 +208,7 @@ namespace MahjongAI
             doRandomDelay();
             var combination = operationList.First(item => (int)item["type"] == 2)["combination"].Select(t => (string)t);
             int index = combination.ToList().FindIndex(comb => comb.Split('|').OrderBy(t => t).SequenceEqual(new[] { tile0.OfficialName, tile1.OfficialName }.OrderBy(t => t)));
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 2, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 2, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Ankan(Tile tile)
@@ -216,7 +216,7 @@ namespace MahjongAI
             doRandomDelay();
             var combination = operationList.First(item => (int)item["type"] == 4)["combination"].Select(t => (string)t);
             int index = combination.ToList().FindIndex(comb => comb.Contains(tile.GeneralName));
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 4, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 4, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Kakan(Tile tile)
@@ -224,23 +224,23 @@ namespace MahjongAI
             doRandomDelay();
             var combination = operationList.First(item => (int)item["type"] == 6)["combination"].Select(t => (string)t);
             int index = combination.ToList().FindIndex(comb => comb.Contains(tile.GeneralName) || comb.Contains(tile.OfficialName));
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 6, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 6, index, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Ron()
         {
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 9, index = 0 }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 9, index = 0 }).Wait();
         }
 
         public override void Tsumo()
         {
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 8, index = 0 }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 8, index = 0 }).Wait();
         }
 
         public override void Ryuukyoku()
         {
             doRandomDelay();
-            Send(wsGame, ".lq.FastTest.inputChiPengGang", new { type = 10, index = 0, timeuse = stopwatch.Elapsed.Seconds }).Wait();
+            Send(wsGameNode, ".lq.FastTest.inputChiPengGang", new { type = 10, index = 0, timeuse = stopwatch.Elapsed.Seconds }).Wait();
         }
 
         public override void Nuku()
@@ -281,9 +281,9 @@ namespace MahjongAI
                     {
                         url += "/game-gateway";
                     }
-                    wsGame = wsUtils.Connect(url);
-                    wsUtils.StartRecv(wsGame, OnMessage, OnError);
-                    Send(wsGame, ".lq.FastTest.authGame", new
+                    wsGameNode = new WebSocketNode(url);
+                    wsUtils.StartRecv(wsGameNode.clientSocket, OnMessage, OnError);
+                    Send(wsGameNode, ".lq.FastTest.authGame", new
                     {
                         account_id = accountId,
                         token = data["connect_token"],
@@ -351,11 +351,11 @@ namespace MahjongAI
 
                 if (!continued)
                 {
-                    Send(wsGame, ".lq.FastTest.enterGame", new { }).Wait();
+                    Send(wsGameNode, ".lq.FastTest.enterGame", new { }).Wait();
                 }
                 else
                 {
-                    Send(wsGame, ".lq.FastTest.syncGame", new { round_id = "-1", step = 1000000 }).Wait();
+                    Send(wsGameNode, ".lq.FastTest.syncGame", new { round_id = "-1", step = 1000000 }).Wait();
                     continued = false;
                 }
             }
@@ -369,8 +369,8 @@ namespace MahjongAI
             }
             else if (message.MethodName == ".lq.NotifyGameEndResult")
             {
-                Bye();
                 gameEnded = true;
+                Bye();
                 InvokeOnGameEnd();
             }
             else if (message.MethodName == "ActionHule")
@@ -447,7 +447,7 @@ namespace MahjongAI
             {
                 syncing = true;
                 continuedBetweenGames = (int)message.Json["step"] == 0;
-                Send(wsGame, ".lq.FastTest.fetchGamePlayerState", new { }).Wait();
+                Send(wsGameNode, ".lq.FastTest.fetchGamePlayerState", new { }).Wait();
 
                 if (message.Json["game_restore"]["actions"] != null)
                 {
@@ -474,7 +474,7 @@ namespace MahjongAI
                     HandleMessage(actionMessage, forSync: true);
                 }
 
-                Send(wsGame, ".lq.FastTest.finishSyncGame", new { }).Wait();
+                Send(wsGameNode, ".lq.FastTest.finishSyncGame", new { }).Wait();
                 syncing = false;
 
                 if (inited)
@@ -743,7 +743,7 @@ namespace MahjongAI
                 Thread.Sleep(60000);
                 try
                 {
-                    Send(ws, ".lq.Lobby.heatbeat", new { no_operation_counter = 0 }).Wait();
+                    Send(wsNode, ".lq.Lobby.heatbeat", new { no_operation_counter = 0 }).Wait();
                 }
                 catch (Exception)
                 {
@@ -794,7 +794,7 @@ namespace MahjongAI
             }
         }
 
-        private async Task Send(ClientWebSocket ws, string methodName, object data)
+        private async Task Send(WebSocketNode wsNode, string methodName, object data)
         {
             byte[] buffer = majsoulHelper.encode(new MajsoulMessage
             {
@@ -804,7 +804,7 @@ namespace MahjongAI
             });
             try
             {
-                await wsUtils.Send(ws, buffer);
+                wsNode.Send(buffer, gameEnded);
             }
             catch (Exception ex)
             {
