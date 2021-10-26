@@ -53,8 +53,7 @@ namespace MahjongAI
             {
                 url += "/gateway";
             }
-            wsNode = new WebSocketNode(url);
-            wsUtils.StartRecv(wsNode.clientSocket, OnMessage, OnError);
+            wsNode = new WebSocketNode(url, OnMessage, OnError);
             username = config.MajsoulUsername;
             password = config.MajsoulPassword;
         }
@@ -281,8 +280,7 @@ namespace MahjongAI
                     {
                         url += "/game-gateway";
                     }
-                    wsGameNode = new WebSocketNode(url);
-                    wsUtils.StartRecv(wsGameNode.clientSocket, OnMessage, OnError);
+                    wsGameNode = new WebSocketNode(url, OnMessage, OnError);
                     Send(wsGameNode, ".lq.FastTest.authGame", new
                     {
                         account_id = accountId,

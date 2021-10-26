@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using MahjongAI.Util;
@@ -10,19 +11,13 @@ namespace MahjongAI
         private ClientWebSocket ws;
         private WebSocketUtils wsUtils = new WebSocketUtils();
         private string url;
-        
-        public ClientWebSocket clientSocket
-        {
-            get
-            {
-                return ws;
-            }
-        }
-
-        public WebSocketNode(string url)
+        public WebSocketNode(string url, Action<byte[], int> onMessage, Action<Exception> onError)
         {
             this.url = url;
+            
             Connect();
+            
+            StartRecv(onMessage, onError);
         }
         public async Task Send(byte[] buffer, bool gameEnded = false)
         {
@@ -34,7 +29,8 @@ namespace MahjongAI
             {
                 if (!gameEnded)
                 {
-                    Trace.WriteLine(string.Format("Socket state[{0}] not allowed while game not finish! Try reconnect...", ws.State));
+                    Trace.WriteLine(string.Format("The WebSocket is in an invalid state [{0}] while the game is not finished! Reconnecting...", ws.State));
+                    
                     ReconnectAndSend(buffer);
                 }
             }
@@ -47,12 +43,19 @@ namespace MahjongAI
         private void ReconnectAndSend(byte[] buffer)
         {
             Connect();
+            
             Trace.WriteLine("Socket successfully reconnected, state=" + ws.State);
+            
             Send(buffer);
         }
         private void Connect()
         {
             ws = wsUtils.Connect(url);
+        }
+        
+        private void StartRecv(Action<byte[], int> onMessage, Action<Exception> onError)
+        {
+            wsUtils.StartRecv(ws, onMessage, onError);
         }
     }
 }
