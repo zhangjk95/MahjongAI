@@ -258,8 +258,10 @@ namespace MahjongAI
                     int[] pointDeltas = new int[4];
                     for (var i = 0; i < 4; i++)
                     {
-                        gameData.players[i].point = scFields[i * 2] * 100;
-                        pointDeltas[i] = scFields[i * 2 + 1] * 100;
+                        int currentPoints = scFields[i * 2] * 100;
+                        int currentDelta = scFields[i * 2 + 1] * 100;
+                        gameData.players[i].point = currentPoints + currentDelta;
+                        pointDeltas[i] = currentDelta;
                     }
 
                     if (pointDeltas.Any(p => p >= 32000))
