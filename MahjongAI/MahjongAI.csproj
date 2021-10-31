@@ -85,6 +85,7 @@
     <Compile Include="Test.cs" />
     <Compile Include="Util\Syanten.cs" />
     <Compile Include="Util\WebSocketUtils.cs" />
+    <Compile Include="WebSocketNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config.example" />
