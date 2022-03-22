@@ -1,4 +1,4 @@
-FROM mono:5.16.0
+FROM mono:6.12.0
 RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - \
     && apt-get install -y nodejs
 COPY . /usr/src/app
