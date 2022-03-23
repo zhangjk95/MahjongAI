@@ -44,6 +44,8 @@ namespace MahjongAI
         private Stopwatch stopwatch = new Stopwatch();
         private Random random = new Random();
         private Dictionary<string, Timer> timers = new Dictionary<string, Timer>();
+        private string clientVersionString;
+        private string clientVersionApp;
 
         public MajsoulClient(Config config) : base(config)
         {
@@ -53,6 +55,9 @@ namespace MahjongAI
             {
                 url += "/gateway";
             }
+            var versions = getServerVersion();
+            clientVersionString = versions.clientVersionString;
+            clientVersionApp = versions.clientVersionApp;
             wsNode = new WebSocketNode(url, OnMessage, OnError);
             username = config.MajsoulUsername;
             password = config.MajsoulPassword;
@@ -90,9 +95,9 @@ namespace MahjongAI
                 random_key = GetDeviceUUID(),
                 client_version = new
                 {
-                    resource = "0.9.302.w",
+                    resource = clientVersionApp,
                 },
-                client_version_string = "web-0.9.302",
+                client_version_string = clientVersionString,
                 gen_access_token = false,
                 type = 0,
                 device = new
@@ -154,7 +159,7 @@ namespace MahjongAI
         {
             if (roomNumber != 0)
             {
-                Send(wsNode, ".lq.Lobby.joinRoom", new { room_id = roomNumber, client_version_string = "web-0.9.302" }).Wait();
+                Send(wsNode, ".lq.Lobby.joinRoom", new { room_id = roomNumber, client_version_string = clientVersionString }).Wait();
                 inPrivateRoom = true;
             }
             else
@@ -826,9 +831,21 @@ namespace MahjongAI
         private string getServerHost(string serverListUrl)
         {
             var webClient = new WebClient();
-            var serverListJson = webClient.DownloadString(Constants.MAJSOUL_API_URL_PRIFIX[config.MajsoulRegion] + serverListUrl);
+            var gateUrl = Constants.MAJSOUL_API_URL_PRIFIX[config.MajsoulRegion];
+            var serverListJson = webClient.DownloadString(gateUrl + serverListUrl);
             var serverList = JObject.Parse(serverListJson)["servers"];
             return (string)serverList[0];
+        } 
+        
+        private (string clientVersionString, string clientVersionApp) getServerVersion()
+        {
+            var webClient = new WebClient();
+            string serverUrl = Constants.CN_GAME_SERVER_HOST;
+            var serverVersionJson = webClient.DownloadString(serverUrl + "/version.json");
+            var version = JObject.Parse(serverVersionJson)["version"].ToString();
+            Trace.WriteLine(string.Format("Found and use protocol version {0}", version));
+            var number = version.Substring(0, version.Length - 2);
+            return (clientVersionString: String.Format("web-{0}", number), clientVersionApp: version);
         }
 
         private void doRandomDelay()

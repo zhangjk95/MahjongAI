@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MahjongAI.Models;
 
 namespace MahjongAI
 {
     static class Constants
     {
+        public const string CN_GAME_SERVER_HOST = "https://game.maj-soul.com/1";
+
         public static readonly IReadOnlyDictionary<MajsoulRegion, string> MAJSOUL_API_URL_PRIFIX = new Dictionary<MajsoulRegion, string>()
         {
             { MajsoulRegion.CN_INTERNATIONAL_1, "https://lb-hw.maj-soul.com/api/v0" },
